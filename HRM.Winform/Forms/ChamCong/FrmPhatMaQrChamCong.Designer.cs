@@ -1,0 +1,198 @@
+namespace HRM.Winform.Forms.ChamCong
+{
+    partial class FrmPhatMaQrChamCong
+    {
+        private System.ComponentModel.IContainer components = null;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        private Panel pnlTop;
+        private Label lblTitle;
+        private Label lblSubtitle;
+        private Panel pnlInfo;
+        private Label lblNhanVien;
+        private ComboBox cboNhanVien;
+        private Label lblNgay;
+        private DateTimePicker dtpNgay;
+        private Label lblCaLam;
+        private TextBox txtCaLam;
+        private Label lblMaCa;
+        private TextBox txtMaCa;
+        private Label lblChonCa;
+        private ComboBox cboCaLamViec;
+        private Button btnLuuPhanCa;
+        private Button btnTaoMa;
+        private Button btnSaoChep;
+        private Panel pnlQrCard;
+        private Label lblQrTitle;
+        private TextBox txtMaQr;
+        private Panel pnlQrPreview;
+        private PictureBox picQr;
+        private Label lblQrPreview;
+        private Label lblHuongDan;
+
+        private void InitializeComponent()
+        {
+            pnlTop = new Panel();
+            lblSubtitle = new Label();
+            lblTitle = new Label();
+            pnlInfo = new Panel();
+            btnSaoChep = new Button();
+            btnTaoMa = new Button();
+            btnLuuPhanCa = new Button();
+            cboCaLamViec = new ComboBox();
+            lblChonCa = new Label();
+            txtMaCa = new TextBox();
+            lblMaCa = new Label();
+            txtCaLam = new TextBox();
+            lblCaLam = new Label();
+            dtpNgay = new DateTimePicker();
+            lblNgay = new Label();
+            cboNhanVien = new ComboBox();
+            lblNhanVien = new Label();
+            pnlQrCard = new Panel();
+            lblHuongDan = new Label();
+            pnlQrPreview = new Panel();
+            picQr = new PictureBox();
+            lblQrPreview = new Label();
+            txtMaQr = new TextBox();
+            lblQrTitle = new Label();
+            pnlTop.SuspendLayout();
+            pnlInfo.SuspendLayout();
+            pnlQrCard.SuspendLayout();
+            pnlQrPreview.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)picQr).BeginInit();
+            SuspendLayout();
+            pnlTop.Controls.Add(lblSubtitle);
+            pnlTop.Controls.Add(lblTitle);
+            pnlTop.Dock = DockStyle.Top;
+            pnlTop.Padding = new Padding(24, 20, 24, 16);
+            pnlTop.Size = new Size(1184, 96);
+            lblSubtitle.AutoSize = true;
+            lblSubtitle.Location = new Point(24, 61);
+            lblSubtitle.Text = "Phat ma QR noi bo theo nhan vien, ngay lam va ma ca de check in.";
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            lblTitle.Location = new Point(24, 20);
+            lblTitle.Text = "Phat ma QR cham cong";
+            pnlInfo.Controls.Add(btnSaoChep);
+            pnlInfo.Controls.Add(btnTaoMa);
+            pnlInfo.Controls.Add(btnLuuPhanCa);
+            pnlInfo.Controls.Add(cboCaLamViec);
+            pnlInfo.Controls.Add(lblChonCa);
+            pnlInfo.Controls.Add(txtMaCa);
+            pnlInfo.Controls.Add(lblMaCa);
+            pnlInfo.Controls.Add(txtCaLam);
+            pnlInfo.Controls.Add(lblCaLam);
+            pnlInfo.Controls.Add(dtpNgay);
+            pnlInfo.Controls.Add(lblNgay);
+            pnlInfo.Controls.Add(cboNhanVien);
+            pnlInfo.Controls.Add(lblNhanVien);
+            pnlInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom;
+            pnlInfo.Location = new Point(24, 122);
+            pnlInfo.Padding = new Padding(24);
+            pnlInfo.Size = new Size(560, 294);
+            btnSaoChep.Location = new Point(395, 174);
+            btnSaoChep.Size = new Size(138, 40);
+            btnSaoChep.Text = "Sao chep ma";
+            btnSaoChep.Click += btnSaoChep_Click;
+            btnTaoMa.Location = new Point(251, 174);
+            btnTaoMa.Size = new Size(130, 40);
+            btnTaoMa.Text = "Tao lai ma";
+            btnTaoMa.Click += btnTaoMa_Click;
+            btnLuuPhanCa.Location = new Point(27, 174);
+            btnLuuPhanCa.Size = new Size(210, 40);
+            btnLuuPhanCa.Text = "Luu/Gan ca lam viec";
+            btnLuuPhanCa.Click += btnLuuPhanCa_Click;
+            cboCaLamViec.DropDownStyle = ComboBoxStyle.DropDownList;
+            cboCaLamViec.Location = new Point(27, 231);
+            cboCaLamViec.Size = new Size(506, 28);
+            lblChonCa.AutoSize = true;
+            lblChonCa.Location = new Point(27, 208);
+            lblChonCa.Text = "Chon ca de gan nhanh";
+            txtMaCa.Location = new Point(287, 118);
+            txtMaCa.ReadOnly = true;
+            txtMaCa.Size = new Size(246, 27);
+            lblMaCa.AutoSize = true;
+            lblMaCa.Location = new Point(287, 95);
+            lblMaCa.Text = "Ma ca";
+            txtCaLam.Location = new Point(27, 118);
+            txtCaLam.ReadOnly = true;
+            txtCaLam.Size = new Size(236, 27);
+            lblCaLam.AutoSize = true;
+            lblCaLam.Location = new Point(27, 95);
+            lblCaLam.Text = "Ca lam viec";
+            dtpNgay.Format = DateTimePickerFormat.Short;
+            dtpNgay.Location = new Point(287, 47);
+            dtpNgay.Size = new Size(246, 27);
+            dtpNgay.ValueChanged += dtpNgay_ValueChanged;
+            lblNgay.AutoSize = true;
+            lblNgay.Location = new Point(287, 24);
+            lblNgay.Text = "Ngay";
+            cboNhanVien.DropDownStyle = ComboBoxStyle.DropDownList;
+            cboNhanVien.Location = new Point(27, 47);
+            cboNhanVien.Size = new Size(236, 28);
+            cboNhanVien.SelectedIndexChanged += cboNhanVien_SelectedIndexChanged;
+            lblNhanVien.AutoSize = true;
+            lblNhanVien.Location = new Point(27, 24);
+            lblNhanVien.Text = "Nhan vien";
+            pnlQrCard.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+            pnlQrCard.Controls.Add(lblHuongDan);
+            pnlQrCard.Controls.Add(pnlQrPreview);
+            pnlQrCard.Controls.Add(txtMaQr);
+            pnlQrCard.Controls.Add(lblQrTitle);
+            pnlQrCard.Location = new Point(610, 122);
+            pnlQrCard.Padding = new Padding(24);
+            pnlQrCard.Size = new Size(547, 384);
+            lblHuongDan.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+            lblHuongDan.AutoSize = false;
+            lblHuongDan.Location = new Point(27, 326);
+            lblHuongDan.Size = new Size(493, 36);
+            lblHuongDan.Text = "Huong dan";
+            pnlQrPreview.Controls.Add(picQr);
+            pnlQrPreview.Controls.Add(lblQrPreview);
+            pnlQrPreview.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            pnlQrPreview.Location = new Point(27, 101);
+            pnlQrPreview.Size = new Size(493, 205);
+            picQr.Dock = DockStyle.Fill;
+            picQr.SizeMode = PictureBoxSizeMode.Zoom;
+            lblQrPreview.Dock = DockStyle.Fill;
+            lblQrPreview.Font = new Font("Consolas", 20F, FontStyle.Bold);
+            lblQrPreview.TextAlign = ContentAlignment.MiddleCenter;
+            lblQrPreview.Text = "HRM-QR";
+            txtMaQr.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            txtMaQr.Location = new Point(27, 59);
+            txtMaQr.ReadOnly = true;
+            txtMaQr.Size = new Size(493, 27);
+            lblQrTitle.AutoSize = true;
+            lblQrTitle.Location = new Point(27, 32);
+            lblQrTitle.Text = "Ma QR dang phat";
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1184, 761);
+            Controls.Add(pnlQrCard);
+            Controls.Add(pnlInfo);
+            Controls.Add(pnlTop);
+            MinimumSize = new Size(980, 680);
+            Name = "FrmPhatMaQrChamCong";
+            Text = "Phat ma QR cham cong";
+            Load += FrmPhatMaQrChamCong_Load;
+            pnlTop.ResumeLayout(false);
+            pnlTop.PerformLayout();
+            pnlInfo.ResumeLayout(false);
+            pnlInfo.PerformLayout();
+            pnlQrCard.ResumeLayout(false);
+            pnlQrCard.PerformLayout();
+            pnlQrPreview.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)picQr).EndInit();
+            ResumeLayout(false);
+        }
+    }
+}
