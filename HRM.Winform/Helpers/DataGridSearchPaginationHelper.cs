@@ -22,6 +22,7 @@ namespace HRM.Winform.Helpers
         private readonly int _top;
         private readonly int _right;
         private readonly int _bottom;
+        private readonly int _panelPadding = 6;
 
         private DataTable _fullTable = new();
         private List<DataRow> _filteredRows = new();
@@ -33,6 +34,11 @@ namespace HRM.Winform.Helpers
             _grid = grid;
             _parent = grid.Parent ?? throw new InvalidOperationException("Grid must have a parent control.");
 
+            // A docked grid will keep reclaiming the whole parent area and hide
+            // the search / pager bars that this helper injects.
+            _grid.Dock = DockStyle.None;
+            _grid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
             _left = grid.Left;
             _top = grid.Top;
             _right = _parent.ClientSize.Width - (grid.Left + grid.Width);
@@ -40,15 +46,17 @@ namespace HRM.Winform.Helpers
 
             _topPanel = new Panel
             {
-                Height = 36,
-                BackColor = Color.Transparent
+                Height = 40,
+                BackColor = ThemeHelper.CardBackColor
             };
+            _topPanel.Paint += DrawTopBand;
 
             _bottomPanel = new Panel
             {
-                Height = 38,
-                BackColor = Color.Transparent
+                Height = 42,
+                BackColor = ThemeHelper.CardBackColor
             };
+            _bottomPanel.Paint += DrawBottomBand;
 
             _txtSearch = new TextBox
             {
@@ -62,7 +70,7 @@ namespace HRM.Winform.Helpers
             {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Font = new Font("Segoe UI", 9.5F),
-                Width = 72
+                Width = 64
             };
             _cboPageSize.Items.AddRange(new object[] { 10, 20, 50, 100 });
             _cboPageSize.SelectedIndex = 0;
@@ -73,7 +81,7 @@ namespace HRM.Winform.Helpers
                 AutoSize = false,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Font = new Font("Segoe UI", 9.25F),
-                ForeColor = Color.FromArgb(76, 89, 112)
+                ForeColor = ThemeHelper.TextSecondary
             };
 
             _lblPageInfo = new Label
@@ -81,7 +89,7 @@ namespace HRM.Winform.Helpers
                 AutoSize = false,
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Segoe UI Semibold", 9.25F),
-                ForeColor = Color.FromArgb(33, 37, 41)
+                ForeColor = ThemeHelper.TextPrimary
             };
 
             _btnPrev = CreatePagerButton("Truoc");
@@ -137,14 +145,20 @@ namespace HRM.Winform.Helpers
 
         private void ApplyTheme()
         {
-            _topPanel.BackColor = Color.White;
-            _bottomPanel.BackColor = Color.White;
+            _topPanel.BackColor = ThemeHelper.CardBackColor;
+            _bottomPanel.BackColor = ThemeHelper.CardBackColor;
 
             _txtSearch.BackColor = Color.White;
-            _txtSearch.ForeColor = Color.FromArgb(33, 37, 41);
+            _txtSearch.ForeColor = ThemeHelper.TextPrimary;
 
             _cboPageSize.BackColor = Color.White;
-            _cboPageSize.ForeColor = Color.FromArgb(33, 37, 41);
+            _cboPageSize.ForeColor = ThemeHelper.TextPrimary;
+            _cboPageSize.FlatStyle = FlatStyle.Flat;
+
+            ThemeHelper.ApplySecondaryButton(_btnPrev);
+            ThemeHelper.ApplySecondaryButton(_btnNext);
+            _btnPrev.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+            _btnNext.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
         }
 
         public void RefreshLayout()
@@ -153,22 +167,22 @@ namespace HRM.Winform.Helpers
             int frameHeight = Math.Max(160, _parent.ClientSize.Height - _top - _bottom);
             int topHeight = _topPanel.Height;
             int bottomHeight = _bottomPanel.Height;
-            int gap = 8;
+            int gap = 10;
 
             _topPanel.SetBounds(_left, _top, frameWidth, topHeight);
             _bottomPanel.SetBounds(_left, _top + frameHeight - bottomHeight, frameWidth, bottomHeight);
 
-            _txtSearch.SetBounds(0, 4, Math.Min(320, frameWidth), 28);
+            _txtSearch.SetBounds(_panelPadding, 7, Math.Min(290, frameWidth - (_panelPadding * 2)), 26);
 
-            _lblSummary.SetBounds(0, 7, Math.Min(360, frameWidth / 2), 24);
-            _cboPageSize.SetBounds(Math.Max(0, _lblSummary.Right + 8), 5, 72, 28);
+            _lblSummary.SetBounds(_panelPadding, 9, Math.Min(280, frameWidth / 3), 22);
+            _cboPageSize.SetBounds(_lblSummary.Right + 8, 7, 62, 26);
 
-            int pagerWidth = 230;
-            int pagerLeft = Math.Max(_cboPageSize.Right + 8, frameWidth - pagerWidth);
+            int pagerWidth = 210;
+            int pagerLeft = Math.Max(_cboPageSize.Right + 10, frameWidth - pagerWidth - _panelPadding);
 
-            _btnPrev.SetBounds(pagerLeft, 5, 68, 28);
-            _lblPageInfo.SetBounds(_btnPrev.Right + gap, 7, 74, 24);
-            _btnNext.SetBounds(_lblPageInfo.Right + gap, 5, 68, 28);
+            _btnPrev.SetBounds(pagerLeft, 7, 62, 26);
+            _lblPageInfo.SetBounds(_btnPrev.Right + gap, 9, 56, 22);
+            _btnNext.SetBounds(_lblPageInfo.Right + gap, 7, 62, 26);
 
             _grid.SetBounds(
                 _left,
@@ -188,10 +202,26 @@ namespace HRM.Winform.Helpers
                 Text = text,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI Semibold", 9F),
-                BackColor = Color.FromArgb(238, 243, 255),
-                ForeColor = Color.FromArgb(44, 91, 255),
+                BackColor = ThemeHelper.CardBackColor,
+                ForeColor = ThemeHelper.PrimaryColor,
                 Cursor = Cursors.Hand
             };
+        }
+
+        private void DrawTopBand(object? sender, PaintEventArgs e)
+        {
+            using var brush = new SolidBrush(ThemeHelper.CardBackColor);
+            using var pen = new Pen(ThemeHelper.BorderColor);
+            e.Graphics.FillRectangle(brush, 0, 0, _topPanel.Width, _topPanel.Height);
+            e.Graphics.DrawRectangle(pen, 0, 0, _topPanel.Width - 1, _topPanel.Height - 1);
+        }
+
+        private void DrawBottomBand(object? sender, PaintEventArgs e)
+        {
+            using var brush = new SolidBrush(ThemeHelper.CardBackColor);
+            using var pen = new Pen(ThemeHelper.BorderColor);
+            e.Graphics.FillRectangle(brush, 0, 0, _bottomPanel.Width, _bottomPanel.Height);
+            e.Graphics.DrawRectangle(pen, 0, 0, _bottomPanel.Width - 1, _bottomPanel.Height - 1);
         }
 
         private void RefreshView(int page)

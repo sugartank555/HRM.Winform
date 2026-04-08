@@ -17,19 +17,43 @@ namespace HRM.Winform.Forms.NhanSu
 
         private void FrmTaiKhoan_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
             _gridHelper ??= new DataGridSearchPaginationHelper(dgvTaiKhoan);
             TaiNhanVien();
             TaiVaiTro();
             TaiDuLieu();
             LamMoi();
+            ApplyResponsiveLayout();
             _gridHelper?.RefreshLayout();
-            Resize += (_, _) => _gridHelper?.RefreshLayout();
+            Resize += (_, _) => ApplyResponsiveLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+            ThemeHelper.ApplyCard(pnlThongTin);
+            ThemeHelper.ApplyPrimaryButton(btnThem);
+            ThemeHelper.ApplySecondaryButton(btnSua);
+            ThemeHelper.ApplyDangerButton(btnXoa);
+            ThemeHelper.ApplySecondaryButton(btnLamMoi);
+            ThemeHelper.ApplyDataGrid(dgvTaiKhoan);
+
+            foreach (Control control in pnlThongTin.Controls)
+            {
+                if (control is TextBox or ComboBox)
+                {
+                    ThemeHelper.ApplyInput(control);
+                }
+            }
         }
 
         private void CaiDatGrid()
         {
             dgvTaiKhoan.AutoGenerateColumns = false;
+            dgvTaiKhoan.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvTaiKhoan.Columns.Clear();
 
             dgvTaiKhoan.Columns.Add(new DataGridViewTextBoxColumn
@@ -44,7 +68,8 @@ namespace HRM.Winform.Forms.NhanSu
                 Name = "TenDangNhap",
                 HeaderText = "Tên đăng nhập",
                 DataPropertyName = "TenDangNhap",
-                Width = 150
+                FillWeight = 95,
+                MinimumWidth = 120
             });
 
             dgvTaiKhoan.Columns.Add(new DataGridViewTextBoxColumn
@@ -52,7 +77,8 @@ namespace HRM.Winform.Forms.NhanSu
                 Name = "HoTen",
                 HeaderText = "Nhân viên",
                 DataPropertyName = "HoTen",
-                Width = 220
+                FillWeight = 150,
+                MinimumWidth = 180
             });
 
             dgvTaiKhoan.Columns.Add(new DataGridViewTextBoxColumn
@@ -60,7 +86,8 @@ namespace HRM.Winform.Forms.NhanSu
                 Name = "VaiTro",
                 HeaderText = "Vai trò",
                 DataPropertyName = "VaiTro",
-                Width = 120
+                FillWeight = 90,
+                MinimumWidth = 110
             });
 
             dgvTaiKhoan.Columns.Add(new DataGridViewCheckBoxColumn
@@ -68,7 +95,8 @@ namespace HRM.Winform.Forms.NhanSu
                 Name = "HoatDong",
                 HeaderText = "Hoạt động",
                 DataPropertyName = "HoatDong",
-                Width = 90
+                FillWeight = 70,
+                MinimumWidth = 95
             });
 
             dgvTaiKhoan.Columns.Add(new DataGridViewTextBoxColumn
@@ -319,6 +347,24 @@ namespace HRM.Winform.Forms.NhanSu
             cboVaiTro.Text = row.Cells["VaiTro"].Value?.ToString() ?? "";
             chkHoatDong.Checked = Convert.ToBoolean(row.Cells["HoatDong"].Value ?? true);
             cboNhanVien.SelectedValue = Convert.ToInt32(row.Cells["NhanVienId"].Value);
+        }
+
+        private void ApplyResponsiveLayout()
+        {
+            int actionWidth = 95;
+            int actionGap = 8;
+            int panelRight = pnlThongTin.ClientSize.Width - 24;
+
+            btnLamMoi.SetBounds(panelRight - actionWidth, 61, actionWidth, 35);
+            btnXoa.SetBounds(btnLamMoi.Left - actionGap - actionWidth, 61, actionWidth, 35);
+            btnSua.SetBounds(panelRight - actionWidth, 20, actionWidth, 35);
+            btnThem.SetBounds(btnSua.Left - actionGap - actionWidth, 20, actionWidth, 35);
+
+            int rightContentLimit = btnThem.Left - 24;
+            cboNhanVien.Width = Math.Max(280, rightContentLimit - cboNhanVien.Left);
+            chkHoatDong.Left = Math.Max(cboVaiTro.Right + 18, rightContentLimit - chkHoatDong.Width);
+
+            _gridHelper?.RefreshLayout();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using HRM.Winform.Data;
+using HRM.Winform.Data;
+using HRM.Winform.Helpers;
 using HRM.Winform.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,8 +7,8 @@ namespace HRM.Winform.Forms.DonTu
 {
     public partial class FrmDonTangCa : Form
     {
-        private int _idDangChon = 0;
-        private HRM.Winform.Helpers.DataGridSearchPaginationHelper? _gridHelper;
+        private int _idDangChon;
+        private DataGridSearchPaginationHelper? _gridHelper;
 
         public FrmDonTangCa()
         {
@@ -16,11 +17,37 @@ namespace HRM.Winform.Forms.DonTu
 
         private void FrmDonTangCa_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
-            _gridHelper ??= new HRM.Winform.Helpers.DataGridSearchPaginationHelper(dgvDonTangCa);
+            _gridHelper ??= new DataGridSearchPaginationHelper(dgvDonTangCa);
             TaiNhanVien();
             TaiDuLieu();
             LamMoi();
+            _gridHelper?.RefreshLayout();
+            Resize += (_, _) => _gridHelper?.RefreshLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            pnlThongTin.BackColor = ThemeHelper.CardBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+
+            ThemeHelper.ApplyInput(cboNhanVien);
+            ThemeHelper.ApplyInput(dtpNgayLam);
+            ThemeHelper.ApplyInput(dtpTuGio);
+            ThemeHelper.ApplyInput(dtpDenGio);
+            ThemeHelper.ApplyInput(nudTongSoGio);
+            ThemeHelper.ApplyInput(txtLyDo);
+            ThemeHelper.ApplyInput(cboTrangThai);
+
+            ThemeHelper.ApplySecondaryButton(btnTinhGio);
+            ThemeHelper.ApplyPrimaryButton(btnThem);
+            ThemeHelper.ApplyPrimaryButton(btnSua);
+            ThemeHelper.ApplyDangerButton(btnXoa);
+            ThemeHelper.ApplySecondaryButton(btnLamMoi);
+            ThemeHelper.ApplyDataGrid(dgvDonTangCa);
         }
 
         private void CaiDatGrid()
@@ -43,6 +70,7 @@ namespace HRM.Winform.Forms.DonTu
             dgvDonTangCa.MultiSelect = false;
             dgvDonTangCa.ReadOnly = true;
             dgvDonTangCa.AllowUserToAddRows = false;
+            dgvDonTangCa.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void TaiNhanVien()
@@ -192,9 +220,10 @@ namespace HRM.Winform.Forms.DonTu
                 return;
             }
 
-            if (MessageBox.Show("Bạn có chắc muốn xóa đơn này không?", "Xác nhận",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            if (MessageBox.Show("Bạn có chắc muốn xóa đơn này không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
                 return;
+            }
 
             using var db = new AppDbContext();
 

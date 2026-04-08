@@ -1,4 +1,5 @@
-﻿using HRM.Winform.Data;
+using HRM.Winform.Data;
+using HRM.Winform.Helpers;
 using HRM.Winform.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,8 +7,8 @@ namespace HRM.Winform.Forms.DonTu
 {
     public partial class FrmDonNghiPhep : Form
     {
-        private int _idDangChon = 0;
-        private HRM.Winform.Helpers.DataGridSearchPaginationHelper? _gridHelper;
+        private int _idDangChon;
+        private DataGridSearchPaginationHelper? _gridHelper;
 
         public FrmDonNghiPhep()
         {
@@ -16,12 +17,38 @@ namespace HRM.Winform.Forms.DonTu
 
         private void FrmDonNghiPhep_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
-            _gridHelper ??= new HRM.Winform.Helpers.DataGridSearchPaginationHelper(dgvDonNghiPhep);
+            _gridHelper ??= new DataGridSearchPaginationHelper(dgvDonNghiPhep);
             TaiNhanVien();
             TaiLoaiNghi();
             TaiDuLieu();
             LamMoi();
+            _gridHelper?.RefreshLayout();
+            Resize += (_, _) => _gridHelper?.RefreshLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            pnlThongTin.BackColor = ThemeHelper.CardBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+
+            ThemeHelper.ApplyInput(cboNhanVien);
+            ThemeHelper.ApplyInput(cboLoaiNghi);
+            ThemeHelper.ApplyInput(dtpTuNgay);
+            ThemeHelper.ApplyInput(dtpDenNgay);
+            ThemeHelper.ApplyInput(nudTongSoNgay);
+            ThemeHelper.ApplyInput(txtLyDo);
+            ThemeHelper.ApplyInput(cboTrangThai);
+
+            ThemeHelper.ApplySecondaryButton(btnTinhSoNgay);
+            ThemeHelper.ApplyPrimaryButton(btnThem);
+            ThemeHelper.ApplyPrimaryButton(btnSua);
+            ThemeHelper.ApplyDangerButton(btnXoa);
+            ThemeHelper.ApplySecondaryButton(btnLamMoi);
+            ThemeHelper.ApplyDataGrid(dgvDonNghiPhep);
         }
 
         private void CaiDatGrid()
@@ -29,97 +56,23 @@ namespace HRM.Winform.Forms.DonTu
             dgvDonNghiPhep.AutoGenerateColumns = false;
             dgvDonNghiPhep.Columns.Clear();
 
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "Id",
-                DataPropertyName = "Id",
-                Visible = false
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "MaNhanVien",
-                HeaderText = "Mã NV",
-                DataPropertyName = "MaNhanVien",
-                Width = 90
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "HoTen",
-                HeaderText = "Họ tên",
-                DataPropertyName = "HoTen",
-                Width = 170
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "TenLoaiNghi",
-                HeaderText = "Loại nghỉ",
-                DataPropertyName = "TenLoaiNghi",
-                Width = 140
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "TuNgay",
-                HeaderText = "Từ ngày",
-                DataPropertyName = "TuNgay",
-                Width = 100,
-                DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "DenNgay",
-                HeaderText = "Đến ngày",
-                DataPropertyName = "DenNgay",
-                Width = 100,
-                DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "TongSoNgay",
-                HeaderText = "Số ngày",
-                DataPropertyName = "TongSoNgay",
-                Width = 80
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "LyDo",
-                HeaderText = "Lý do",
-                DataPropertyName = "LyDo",
-                Width = 200
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "TrangThai",
-                HeaderText = "Trạng thái",
-                DataPropertyName = "TrangThai",
-                Width = 100
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "NhanVienId",
-                DataPropertyName = "NhanVienId",
-                Visible = false
-            });
-
-            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                Name = "LoaiNghiPhepId",
-                DataPropertyName = "LoaiNghiPhepId",
-                Visible = false
-            });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", DataPropertyName = "Id", Visible = false });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "MaNhanVien", HeaderText = "Mã NV", DataPropertyName = "MaNhanVien", Width = 90 });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "HoTen", HeaderText = "Họ tên", DataPropertyName = "HoTen", Width = 170 });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "TenLoaiNghi", HeaderText = "Loại nghỉ", DataPropertyName = "TenLoaiNghi", Width = 140 });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "TuNgay", HeaderText = "Từ ngày", DataPropertyName = "TuNgay", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "DenNgay", HeaderText = "Đến ngày", DataPropertyName = "DenNgay", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "TongSoNgay", HeaderText = "Số ngày", DataPropertyName = "TongSoNgay", Width = 80 });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "LyDo", HeaderText = "Lý do", DataPropertyName = "LyDo", Width = 200 });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "TrangThai", HeaderText = "Trạng thái", DataPropertyName = "TrangThai", Width = 100 });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "NhanVienId", DataPropertyName = "NhanVienId", Visible = false });
+            dgvDonNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "LoaiNghiPhepId", DataPropertyName = "LoaiNghiPhepId", Visible = false });
 
             dgvDonNghiPhep.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvDonNghiPhep.MultiSelect = false;
             dgvDonNghiPhep.ReadOnly = true;
             dgvDonNghiPhep.AllowUserToAddRows = false;
+            dgvDonNghiPhep.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void TaiNhanVien()
@@ -227,8 +180,8 @@ namespace HRM.Winform.Forms.DonTu
 
         private void btnTinhSoNgay_Click(object sender, EventArgs e)
         {
-            int songay = (dtpDenNgay.Value.Date - dtpTuNgay.Value.Date).Days + 1;
-            nudTongSoNgay.Value = songay > 0 ? songay : 1;
+            int soNgay = (dtpDenNgay.Value.Date - dtpTuNgay.Value.Date).Days + 1;
+            nudTongSoNgay.Value = soNgay > 0 ? soNgay : 1;
         }
 
         private void btnThem_Click(object sender, EventArgs e)
@@ -297,9 +250,10 @@ namespace HRM.Winform.Forms.DonTu
                 return;
             }
 
-            if (MessageBox.Show("Bạn có chắc muốn xóa đơn này không?", "Xác nhận",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            if (MessageBox.Show("Bạn có chắc muốn xóa đơn này không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
                 return;
+            }
 
             using var db = new AppDbContext();
 

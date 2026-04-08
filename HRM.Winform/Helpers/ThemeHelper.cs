@@ -12,6 +12,10 @@ namespace HRM.Winform.Helpers
         public static Color WarmAccent => Color.FromArgb(249, 115, 22);
         public static Color DangerColor => Color.FromArgb(239, 68, 68);
         public static Color BorderColor => Color.FromArgb(223, 232, 242);
+        public static Color ListBandColor => Color.FromArgb(248, 251, 255);
+        public static Color GridHeaderBackColor => Color.FromArgb(250, 252, 255);
+        public static Color GridHeaderBorderColor => Color.FromArgb(209, 221, 236);
+        public static Color GridSelectionColor => Color.FromArgb(225, 236, 252);
         public static Color TextPrimary => Color.FromArgb(15, 23, 42);
         public static Color TextSecondary => Color.FromArgb(92, 108, 131);
 
@@ -85,24 +89,34 @@ namespace HRM.Winform.Helpers
         public static void ApplyDataGrid(DataGridView grid)
         {
             grid.BackgroundColor = CardBackColor;
-            grid.BorderStyle = BorderStyle.None;
-            grid.GridColor = BorderColor;
+            grid.BorderStyle = BorderStyle.FixedSingle;
+            grid.GridColor = GridHeaderBorderColor;
+            grid.CellBorderStyle = DataGridViewCellBorderStyle.Single;
+            grid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
             grid.RowHeadersVisible = false;
             grid.AllowUserToAddRows = false;
             grid.AllowUserToDeleteRows = false;
             grid.ReadOnly = true;
             grid.EnableHeadersVisualStyles = false;
-            grid.ColumnHeadersHeight = 40;
-            grid.RowTemplate.Height = 36;
+            grid.ColumnHeadersHeight = 34;
+            grid.RowTemplate.Height = 32;
             grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(244, 247, 251);
+            grid.MultiSelect = false;
+            grid.ColumnHeadersDefaultCellStyle.BackColor = GridHeaderBackColor;
             grid.ColumnHeadersDefaultCellStyle.ForeColor = TextPrimary;
             grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI Semibold", 9.5F, FontStyle.Bold);
+            grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = GridHeaderBackColor;
+            grid.ColumnHeadersDefaultCellStyle.SelectionForeColor = TextPrimary;
+            grid.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            grid.DefaultCellStyle.Font = new Font("Segoe UI", 9.25F);
             grid.DefaultCellStyle.BackColor = CardBackColor;
             grid.DefaultCellStyle.ForeColor = TextPrimary;
-            grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(224, 236, 255);
+            grid.DefaultCellStyle.SelectionBackColor = GridSelectionColor;
             grid.DefaultCellStyle.SelectionForeColor = TextPrimary;
-            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 252, 255);
+            grid.DefaultCellStyle.Padding = new Padding(3, 0, 3, 0);
+            grid.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(251, 253, 255);
+            grid.AlternatingRowsDefaultCellStyle.SelectionBackColor = GridSelectionColor;
         }
 
         private static void DrawCardBorder(object? sender, PaintEventArgs e)

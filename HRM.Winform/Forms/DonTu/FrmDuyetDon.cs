@@ -1,12 +1,13 @@
-﻿using HRM.Winform.Data;
+using HRM.Winform.Data;
+using HRM.Winform.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Winform.Forms.DonTu
 {
     public partial class FrmDuyetDon : Form
     {
-        private HRM.Winform.Helpers.DataGridSearchPaginationHelper? _nghiPhepGridHelper;
-        private HRM.Winform.Helpers.DataGridSearchPaginationHelper? _tangCaGridHelper;
+        private DataGridSearchPaginationHelper? _nghiPhepGridHelper;
+        private DataGridSearchPaginationHelper? _tangCaGridHelper;
 
         public FrmDuyetDon()
         {
@@ -15,10 +16,11 @@ namespace HRM.Winform.Forms.DonTu
 
         private void FrmDuyetDon_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGridNghiPhep();
             CaiDatGridTangCa();
-            _nghiPhepGridHelper ??= new HRM.Winform.Helpers.DataGridSearchPaginationHelper(dgvNghiPhep);
-            _tangCaGridHelper ??= new HRM.Winform.Helpers.DataGridSearchPaginationHelper(dgvTangCa);
+            _nghiPhepGridHelper ??= new DataGridSearchPaginationHelper(dgvNghiPhep);
+            _tangCaGridHelper ??= new DataGridSearchPaginationHelper(dgvTangCa);
             TaiDonNghiPhep();
             TaiDonTangCa();
             _nghiPhepGridHelper?.RefreshLayout();
@@ -35,11 +37,23 @@ namespace HRM.Winform.Forms.DonTu
             };
         }
 
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+            ThemeHelper.ApplyPrimaryButton(btnDuyetNghiPhep);
+            ThemeHelper.ApplyDangerButton(btnTuChoiNghiPhep);
+            ThemeHelper.ApplyPrimaryButton(btnDuyetTangCa);
+            ThemeHelper.ApplyDangerButton(btnTuChoiTangCa);
+            ThemeHelper.ApplyDataGrid(dgvNghiPhep);
+            ThemeHelper.ApplyDataGrid(dgvTangCa);
+        }
+
         private void CaiDatGridNghiPhep()
         {
             dgvNghiPhep.AutoGenerateColumns = false;
             dgvNghiPhep.Columns.Clear();
-
             dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", DataPropertyName = "Id", Visible = false });
             dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mã NV", DataPropertyName = "MaNhanVien", Width = 90 });
             dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Họ tên", DataPropertyName = "HoTen", Width = 160 });
@@ -49,7 +63,6 @@ namespace HRM.Winform.Forms.DonTu
             dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Số ngày", DataPropertyName = "TongSoNgay", Width = 80 });
             dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Lý do", DataPropertyName = "LyDo", Width = 180 });
             dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", DataPropertyName = "TrangThai", Width = 100 });
-
             dgvNghiPhep.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvNghiPhep.MultiSelect = false;
             dgvNghiPhep.ReadOnly = true;
@@ -60,7 +73,6 @@ namespace HRM.Winform.Forms.DonTu
         {
             dgvTangCa.AutoGenerateColumns = false;
             dgvTangCa.Columns.Clear();
-
             dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", DataPropertyName = "Id", Visible = false });
             dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Mã NV", DataPropertyName = "MaNhanVien", Width = 90 });
             dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Họ tên", DataPropertyName = "HoTen", Width = 160 });
@@ -70,7 +82,6 @@ namespace HRM.Winform.Forms.DonTu
             dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tổng giờ", DataPropertyName = "TongSoGio", Width = 80 });
             dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Lý do", DataPropertyName = "LyDo", Width = 180 });
             dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", DataPropertyName = "TrangThai", Width = 100 });
-
             dgvTangCa.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvTangCa.MultiSelect = false;
             dgvTangCa.ReadOnly = true;
@@ -80,11 +91,7 @@ namespace HRM.Winform.Forms.DonTu
         private void TaiDonNghiPhep()
         {
             using var db = new AppDbContext();
-
-            var ds = db.DonNghiPheps
-                .AsNoTracking()
-                .Include(x => x.NhanVien)
-                .Include(x => x.LoaiNghiPhep)
+            var ds = db.DonNghiPheps.AsNoTracking().Include(x => x.NhanVien).Include(x => x.LoaiNghiPhep)
                 .OrderByDescending(x => x.TuNgay)
                 .Select(x => new
                 {
@@ -97,19 +104,14 @@ namespace HRM.Winform.Forms.DonTu
                     x.TongSoNgay,
                     x.LyDo,
                     x.TrangThai
-                })
-                .ToList();
-
+                }).ToList();
             _nghiPhepGridHelper?.ApplyData(ds);
         }
 
         private void TaiDonTangCa()
         {
             using var db = new AppDbContext();
-
-            var ds = db.DonTangCas
-                .AsNoTracking()
-                .Include(x => x.NhanVien)
+            var ds = db.DonTangCas.AsNoTracking().Include(x => x.NhanVien)
                 .OrderByDescending(x => x.NgayLam)
                 .Select(x => new
                 {
@@ -122,31 +124,21 @@ namespace HRM.Winform.Forms.DonTu
                     x.TongSoGio,
                     x.LyDo,
                     x.TrangThai
-                })
-                .ToList();
-
+                }).ToList();
             _tangCaGridHelper?.ApplyData(ds);
         }
 
         private void btnDuyetNghiPhep_Click(object sender, EventArgs e)
         {
-            if (dgvNghiPhep.CurrentRow == null)
-            {
-                MessageBox.Show("Vui lòng chọn đơn nghỉ phép!");
-                return;
-            }
-
+            if (dgvNghiPhep.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn nghỉ phép!"); return; }
             int id = Convert.ToInt32(dgvNghiPhep.CurrentRow.Cells["Id"].Value);
-
             using var db = new AppDbContext();
             var don = db.DonNghiPheps.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
-
             don.TrangThai = "DaDuyet";
             don.NgayDuyet = DateTime.Now;
             don.NguoiDuyet = "Admin";
             don.NgayCapNhat = DateTime.Now;
-
             db.SaveChanges();
             MessageBox.Show("Đã duyệt đơn nghỉ phép!");
             TaiDonNghiPhep();
@@ -154,23 +146,15 @@ namespace HRM.Winform.Forms.DonTu
 
         private void btnTuChoiNghiPhep_Click(object sender, EventArgs e)
         {
-            if (dgvNghiPhep.CurrentRow == null)
-            {
-                MessageBox.Show("Vui lòng chọn đơn nghỉ phép!");
-                return;
-            }
-
+            if (dgvNghiPhep.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn nghỉ phép!"); return; }
             int id = Convert.ToInt32(dgvNghiPhep.CurrentRow.Cells["Id"].Value);
-
             using var db = new AppDbContext();
             var don = db.DonNghiPheps.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
-
             don.TrangThai = "TuChoi";
             don.NgayDuyet = DateTime.Now;
             don.NguoiDuyet = "Admin";
             don.NgayCapNhat = DateTime.Now;
-
             db.SaveChanges();
             MessageBox.Show("Đã từ chối đơn nghỉ phép!");
             TaiDonNghiPhep();
@@ -178,23 +162,15 @@ namespace HRM.Winform.Forms.DonTu
 
         private void btnDuyetTangCa_Click(object sender, EventArgs e)
         {
-            if (dgvTangCa.CurrentRow == null)
-            {
-                MessageBox.Show("Vui lòng chọn đơn tăng ca!");
-                return;
-            }
-
+            if (dgvTangCa.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn tăng ca!"); return; }
             int id = Convert.ToInt32(dgvTangCa.CurrentRow.Cells["Id"].Value);
-
             using var db = new AppDbContext();
             var don = db.DonTangCas.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
-
             don.TrangThai = "DaDuyet";
             don.NgayDuyet = DateTime.Now;
             don.NguoiDuyet = "Admin";
             don.NgayCapNhat = DateTime.Now;
-
             db.SaveChanges();
             MessageBox.Show("Đã duyệt đơn tăng ca!");
             TaiDonTangCa();
@@ -202,23 +178,15 @@ namespace HRM.Winform.Forms.DonTu
 
         private void btnTuChoiTangCa_Click(object sender, EventArgs e)
         {
-            if (dgvTangCa.CurrentRow == null)
-            {
-                MessageBox.Show("Vui lòng chọn đơn tăng ca!");
-                return;
-            }
-
+            if (dgvTangCa.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn tăng ca!"); return; }
             int id = Convert.ToInt32(dgvTangCa.CurrentRow.Cells["Id"].Value);
-
             using var db = new AppDbContext();
             var don = db.DonTangCas.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
-
             don.TrangThai = "TuChoi";
             don.NgayDuyet = DateTime.Now;
             don.NguoiDuyet = "Admin";
             don.NgayCapNhat = DateTime.Now;
-
             db.SaveChanges();
             MessageBox.Show("Đã từ chối đơn tăng ca!");
             TaiDonTangCa();

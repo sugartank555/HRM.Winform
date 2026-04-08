@@ -43,6 +43,9 @@ namespace HRM.Winform.Forms.CaNhan
         private Panel pnlHistory;
         private Label lblHistory;
         private DataGridView dgvHistory;
+        private Panel pnlNotifications;
+        private Label lblNotificationsTitle;
+        private FlowLayoutPanel flpNotifications;
 
         private void InitializeComponent()
         {
@@ -73,6 +76,9 @@ namespace HRM.Winform.Forms.CaNhan
             lblStatsDetail = new Label();
             lblStatsValue = new Label();
             lblStatsTitle = new Label();
+            pnlNotifications = new Panel();
+            flpNotifications = new FlowLayoutPanel();
+            lblNotificationsTitle = new Label();
             pnlHistory = new Panel();
             dgvHistory = new DataGridView();
             lblHistory = new Label();
@@ -232,13 +238,33 @@ namespace HRM.Winform.Forms.CaNhan
             lblStatsTitle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblStatsTitle.Location = new Point(18, 18);
             lblStatsTitle.Text = "Tong quan thang nay";
+            pnlNotifications.Controls.Add(flpNotifications);
+            pnlNotifications.Controls.Add(lblNotificationsTitle);
+            pnlNotifications.Dock = DockStyle.Top;
+            pnlNotifications.Location = new Point(0, 438);
+            pnlNotifications.Name = "pnlNotifications";
+            pnlNotifications.Padding = new Padding(24, 20, 24, 12);
+            pnlNotifications.Size = new Size(1184, 184);
+            flpNotifications.AutoScroll = true;
+            flpNotifications.Dock = DockStyle.Fill;
+            flpNotifications.FlowDirection = FlowDirection.TopDown;
+            flpNotifications.Location = new Point(24, 50);
+            flpNotifications.Name = "flpNotifications";
+            flpNotifications.Padding = new Padding(0, 2, 0, 0);
+            flpNotifications.Size = new Size(1136, 122);
+            flpNotifications.WrapContents = false;
+            lblNotificationsTitle.Dock = DockStyle.Top;
+            lblNotificationsTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblNotificationsTitle.Location = new Point(24, 20);
+            lblNotificationsTitle.Size = new Size(1136, 30);
+            lblNotificationsTitle.Text = "Thong bao ca nhan";
             pnlHistory.Controls.Add(dgvHistory);
             pnlHistory.Controls.Add(lblHistory);
             pnlHistory.Dock = DockStyle.Fill;
-            pnlHistory.Location = new Point(0, 438);
+            pnlHistory.Location = new Point(0, 622);
             pnlHistory.Name = "pnlHistory";
             pnlHistory.Padding = new Padding(24, 20, 24, 24);
-            pnlHistory.Size = new Size(1184, 323);
+            pnlHistory.Size = new Size(1184, 139);
             dgvHistory.Dock = DockStyle.Fill;
             dgvHistory.Location = new Point(24, 48);
             dgvHistory.Name = "dgvHistory";
@@ -253,6 +279,7 @@ namespace HRM.Winform.Forms.CaNhan
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1184, 761);
             Controls.Add(pnlHistory);
+            Controls.Add(pnlNotifications);
             Controls.Add(tlpSummary);
             Controls.Add(pnlTop);
             MinimumSize = new Size(980, 680);
@@ -267,6 +294,7 @@ namespace HRM.Winform.Forms.CaNhan
             pnlShift.ResumeLayout(false);
             pnlReminder.ResumeLayout(false);
             pnlStats.ResumeLayout(false);
+            pnlNotifications.ResumeLayout(false);
             pnlHistory.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvHistory).EndInit();
             ResumeLayout(false);

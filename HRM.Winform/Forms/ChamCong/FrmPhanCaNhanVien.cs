@@ -1,4 +1,5 @@
 ﻿using HRM.Winform.Data;
+using HRM.Winform.Helpers;
 using HRM.Winform.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +8,7 @@ namespace HRM.Winform.Forms.ChamCong
     public partial class FrmPhanCaNhanVien : Form
     {
         private int _idDangChon = 0;
-        private HRM.Winform.Helpers.DataGridSearchPaginationHelper? _gridHelper;
+        private DataGridSearchPaginationHelper? _gridHelper;
 
         public FrmPhanCaNhanVien()
         {
@@ -16,19 +17,39 @@ namespace HRM.Winform.Forms.ChamCong
 
         private void FrmPhanCaNhanVien_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
-            _gridHelper ??= new HRM.Winform.Helpers.DataGridSearchPaginationHelper(dgvPhanCa);
+            _gridHelper ??= new DataGridSearchPaginationHelper(dgvPhanCa);
             TaiNhanVien();
             TaiCaLamViec();
+            TaiCheDoPhanCa();
             TaiDuLieu();
             LamMoi();
+            ApplyResponsiveLayout();
             _gridHelper?.RefreshLayout();
-            Resize += (_, _) => _gridHelper?.RefreshLayout();
+            Resize += (_, _) => ApplyResponsiveLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+            ThemeHelper.ApplyCard(pnlThongTin);
+            ThemeHelper.ApplyInput(cboNhanVien);
+            ThemeHelper.ApplyInput(cboCaLamViec);
+            ThemeHelper.ApplyInput(cboCheDo);
+            ThemeHelper.ApplyPrimaryButton(btnThem);
+            ThemeHelper.ApplySecondaryButton(btnSua);
+            ThemeHelper.ApplyDangerButton(btnXoa);
+            ThemeHelper.ApplySecondaryButton(btnLamMoi);
+            ThemeHelper.ApplyDataGrid(dgvPhanCa);
         }
 
         private void CaiDatGrid()
         {
             dgvPhanCa.AutoGenerateColumns = false;
+            dgvPhanCa.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvPhanCa.Columns.Clear();
 
             dgvPhanCa.Columns.Add(new DataGridViewTextBoxColumn
@@ -43,7 +64,8 @@ namespace HRM.Winform.Forms.ChamCong
                 Name = "MaNhanVien",
                 HeaderText = "Mã NV",
                 DataPropertyName = "MaNhanVien",
-                Width = 100
+                FillWeight = 75,
+                MinimumWidth = 90
             });
 
             dgvPhanCa.Columns.Add(new DataGridViewTextBoxColumn
@@ -51,7 +73,8 @@ namespace HRM.Winform.Forms.ChamCong
                 Name = "HoTen",
                 HeaderText = "Họ tên",
                 DataPropertyName = "HoTen",
-                Width = 180
+                FillWeight = 130,
+                MinimumWidth = 150
             });
 
             dgvPhanCa.Columns.Add(new DataGridViewTextBoxColumn
@@ -59,7 +82,8 @@ namespace HRM.Winform.Forms.ChamCong
                 Name = "TenCa",
                 HeaderText = "Ca làm việc",
                 DataPropertyName = "TenCa",
-                Width = 180
+                FillWeight = 120,
+                MinimumWidth = 140
             });
 
             dgvPhanCa.Columns.Add(new DataGridViewTextBoxColumn
@@ -67,7 +91,8 @@ namespace HRM.Winform.Forms.ChamCong
                 Name = "NgayLamViec",
                 HeaderText = "Ngày làm việc",
                 DataPropertyName = "NgayLamViec",
-                Width = 120,
+                FillWeight = 90,
+                MinimumWidth = 120,
                 DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }
             });
 
@@ -126,6 +151,15 @@ namespace HRM.Winform.Forms.ChamCong
             cboCaLamViec.SelectedIndex = -1;
         }
 
+        private void TaiCheDoPhanCa()
+        {
+            cboCheDo.Items.Clear();
+            cboCheDo.Items.Add("Nhập tay theo ngày");
+            cboCheDo.Items.Add("Tự động theo tuần");
+            cboCheDo.Items.Add("Tự động theo tháng");
+            cboCheDo.SelectedIndex = 0;
+        }
+
         private void TaiDuLieu()
         {
             using var db = new AppDbContext();
@@ -156,6 +190,7 @@ namespace HRM.Winform.Forms.ChamCong
             _idDangChon = 0;
             cboNhanVien.SelectedIndex = -1;
             cboCaLamViec.SelectedIndex = -1;
+            cboCheDo.SelectedIndex = cboCheDo.Items.Count > 0 ? 0 : -1;
             dtpNgayLamViec.Value = DateTime.Today;
         }
 
@@ -184,30 +219,47 @@ namespace HRM.Winform.Forms.ChamCong
 
             int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
             int caLamViecId = Convert.ToInt32(cboCaLamViec.SelectedValue);
-            DateTime ngay = dtpNgayLamViec.Value.Date;
+            List<DateTime> danhSachNgay = TaoDanhSachNgayPhanCa(dtpNgayLamViec.Value.Date);
 
             using var db = new AppDbContext();
+            var ngaySet = danhSachNgay.Select(x => x.Date).ToHashSet();
+            var daTonTai = db.PhanCaNhanViens
+                .Where(x => x.NhanVienId == nhanVienId && ngaySet.Contains(x.NgayLamViec.Date))
+                .Select(x => x.NgayLamViec.Date)
+                .ToList()
+                .ToHashSet();
 
-            bool daTonTai = db.PhanCaNhanViens.Any(x =>
-                x.NhanVienId == nhanVienId &&
-                x.NgayLamViec == ngay);
-
-            if (daTonTai)
+            int daThem = 0;
+            foreach (var ngay in danhSachNgay)
             {
-                MessageBox.Show("Nhân viên đã được phân ca trong ngày này!");
+                if (daTonTai.Contains(ngay.Date))
+                {
+                    continue;
+                }
+
+                db.PhanCaNhanViens.Add(new PhanCaNhanVien
+                {
+                    NhanVienId = nhanVienId,
+                    CaLamViecId = caLamViecId,
+                    NgayLamViec = ngay,
+                    NgayTao = DateTime.Now
+                });
+                daThem++;
+            }
+
+            if (daThem == 0)
+            {
+                MessageBox.Show("Các ngày trong phạm vi chọn đã được phân ca rồi.");
                 return;
             }
 
-            db.PhanCaNhanViens.Add(new PhanCaNhanVien
-            {
-                NhanVienId = nhanVienId,
-                CaLamViecId = caLamViecId,
-                NgayLamViec = ngay,
-                NgayTao = DateTime.Now
-            });
-
             db.SaveChanges();
-            MessageBox.Show("Phân ca thành công!");
+            int boQua = danhSachNgay.Count - daThem;
+            string phamVi = cboCheDo.Text;
+            MessageBox.Show(
+                boQua > 0
+                    ? $"Đã phân ca {daThem} ngày theo chế độ '{phamVi}'. Bỏ qua {boQua} ngày đã có sẵn."
+                    : $"Đã phân ca {daThem} ngày theo chế độ '{phamVi}'.");
             TaiDuLieu();
             LamMoi();
         }
@@ -300,6 +352,50 @@ namespace HRM.Winform.Forms.ChamCong
             cboNhanVien.SelectedValue = Convert.ToInt32(row.Cells["NhanVienId"].Value);
             cboCaLamViec.SelectedValue = Convert.ToInt32(row.Cells["CaLamViecId"].Value);
             dtpNgayLamViec.Value = Convert.ToDateTime(row.Cells["NgayLamViec"].Value);
+        }
+
+        private void ApplyResponsiveLayout()
+        {
+            int rightPadding = 24;
+            int actionWidth = 90;
+            int gap = 6;
+            int panelRight = pnlThongTin.ClientSize.Width - rightPadding;
+
+            btnXoa.SetBounds(panelRight - actionWidth, 108, actionWidth, 34);
+            btnSua.SetBounds(btnXoa.Left - gap - actionWidth, 108, actionWidth, 34);
+            btnThem.SetBounds(btnSua.Left - gap - 120, 108, 120, 34);
+            btnLamMoi.SetBounds(panelRight - 196, 64, 196, 34);
+
+            dtpNgayLamViec.Left = panelRight - dtpNgayLamViec.Width;
+            lblNgayLamViec.Left = dtpNgayLamViec.Left - lblNgayLamViec.Width - 10;
+
+            cboCaLamViec.Left = lblNgayLamViec.Left - 18 - cboCaLamViec.Width;
+            lblCaLamViec.Left = cboCaLamViec.Left - lblCaLamViec.Width - 10;
+
+            cboNhanVien.Width = Math.Max(260, lblCaLamViec.Left - 24 - cboNhanVien.Left);
+            cboCheDo.Width = Math.Max(220, btnThem.Left - 30 - cboCheDo.Left);
+
+            _gridHelper?.RefreshLayout();
+        }
+
+        private List<DateTime> TaoDanhSachNgayPhanCa(DateTime ngayBatDau)
+        {
+            string cheDo = cboCheDo.Text;
+            if (cheDo.Contains("tuần", StringComparison.OrdinalIgnoreCase))
+            {
+                int diff = ((int)ngayBatDau.DayOfWeek + 6) % 7;
+                DateTime dauTuan = ngayBatDau.AddDays(-diff);
+                return Enumerable.Range(0, 7).Select(i => dauTuan.AddDays(i).Date).ToList();
+            }
+
+            if (cheDo.Contains("tháng", StringComparison.OrdinalIgnoreCase))
+            {
+                DateTime dauThang = new DateTime(ngayBatDau.Year, ngayBatDau.Month, 1);
+                int soNgay = DateTime.DaysInMonth(ngayBatDau.Year, ngayBatDau.Month);
+                return Enumerable.Range(0, soNgay).Select(i => dauThang.AddDays(i).Date).ToList();
+            }
+
+            return [ngayBatDau.Date];
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace HRM.Winform.Forms.DanhMuc
+namespace HRM.Winform.Forms.DanhMuc
 {
     partial class FrmCaLamViec
     {
@@ -11,6 +11,8 @@
         }
 
         private Label lblTieuDe;
+        private Label lblMoTaForm;
+        private Panel pnlThongTin;
         private Label lblMaCa;
         private Label lblTenCa;
         private Label lblGioBatDau;
@@ -36,6 +38,8 @@
         private void InitializeComponent()
         {
             lblTieuDe = new Label();
+            lblMoTaForm = new Label();
+            pnlThongTin = new Panel();
             lblMaCa = new Label();
             lblTenCa = new Label();
             lblGioBatDau = new Label();
@@ -57,135 +61,129 @@
             btnXoa = new Button();
             btnLamMoi = new Button();
             dgvCaLamViec = new DataGridView();
+            pnlThongTin.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudSoPhutNghi).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudDiMuon).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudVeSom).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dgvCaLamViec).BeginInit();
             SuspendLayout();
-
             lblTieuDe.AutoSize = true;
-            lblTieuDe.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblTieuDe.Location = new Point(28, 18);
-            lblTieuDe.Text = "DANH MỤC CA LÀM VIỆC";
-
+            lblTieuDe.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            lblTieuDe.Location = new Point(24, 18);
+            lblTieuDe.Text = "Ca làm việc";
+            lblMoTaForm.AutoSize = true;
+            lblMoTaForm.Location = new Point(28, 62);
+            lblMoTaForm.Text = "Thiết lập khung giờ làm việc, thời gian nghỉ và quy định đi muộn/về sớm.";
+            pnlThongTin.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pnlThongTin.Controls.Add(btnLamMoi);
+            pnlThongTin.Controls.Add(btnXoa);
+            pnlThongTin.Controls.Add(btnSua);
+            pnlThongTin.Controls.Add(btnThem);
+            pnlThongTin.Controls.Add(chkHoatDong);
+            pnlThongTin.Controls.Add(chkQuaDem);
+            pnlThongTin.Controls.Add(nudVeSom);
+            pnlThongTin.Controls.Add(nudDiMuon);
+            pnlThongTin.Controls.Add(nudSoPhutNghi);
+            pnlThongTin.Controls.Add(dtpGioKetThuc);
+            pnlThongTin.Controls.Add(dtpGioBatDau);
+            pnlThongTin.Controls.Add(txtTenCa);
+            pnlThongTin.Controls.Add(txtMaCa);
+            pnlThongTin.Controls.Add(lblVeSom);
+            pnlThongTin.Controls.Add(lblDiMuon);
+            pnlThongTin.Controls.Add(lblSoPhutNghi);
+            pnlThongTin.Controls.Add(lblGioKetThuc);
+            pnlThongTin.Controls.Add(lblGioBatDau);
+            pnlThongTin.Controls.Add(lblTenCa);
+            pnlThongTin.Controls.Add(lblMaCa);
+            pnlThongTin.Location = new Point(24, 100);
+            pnlThongTin.Size = new Size(1030, 168);
             lblMaCa.AutoSize = true;
-            lblMaCa.Location = new Point(31, 78);
+            lblMaCa.Location = new Point(24, 28);
             lblMaCa.Text = "Mã ca";
             lblTenCa.AutoSize = true;
-            lblTenCa.Location = new Point(31, 118);
+            lblTenCa.Location = new Point(24, 68);
             lblTenCa.Text = "Tên ca";
             lblGioBatDau.AutoSize = true;
-            lblGioBatDau.Location = new Point(31, 158);
+            lblGioBatDau.Location = new Point(24, 108);
             lblGioBatDau.Text = "Giờ bắt đầu";
             lblGioKetThuc.AutoSize = true;
-            lblGioKetThuc.Location = new Point(31, 198);
+            lblGioKetThuc.Location = new Point(330, 108);
             lblGioKetThuc.Text = "Giờ kết thúc";
             lblSoPhutNghi.AutoSize = true;
-            lblSoPhutNghi.Location = new Point(430, 78);
+            lblSoPhutNghi.Location = new Point(330, 28);
             lblSoPhutNghi.Text = "Số phút nghỉ";
             lblDiMuon.AutoSize = true;
-            lblDiMuon.Location = new Point(430, 118);
+            lblDiMuon.Location = new Point(330, 68);
             lblDiMuon.Text = "Cho phép đi muộn";
             lblVeSom.AutoSize = true;
-            lblVeSom.Location = new Point(430, 158);
+            lblVeSom.Location = new Point(620, 28);
             lblVeSom.Text = "Cho phép về sớm";
-
-            txtMaCa.Location = new Point(145, 75);
-            txtMaCa.Size = new Size(220, 27);
-            txtTenCa.Location = new Point(145, 115);
-            txtTenCa.Size = new Size(220, 27);
-
+            txtMaCa.Location = new Point(126, 24);
+            txtMaCa.Size = new Size(160, 27);
+            txtTenCa.Location = new Point(126, 64);
+            txtTenCa.Size = new Size(160, 27);
             dtpGioBatDau.Format = DateTimePickerFormat.Time;
             dtpGioBatDau.ShowUpDown = true;
-            dtpGioBatDau.Location = new Point(145, 155);
-            dtpGioBatDau.Size = new Size(220, 27);
-
+            dtpGioBatDau.Location = new Point(126, 104);
+            dtpGioBatDau.Size = new Size(160, 27);
             dtpGioKetThuc.Format = DateTimePickerFormat.Time;
             dtpGioKetThuc.ShowUpDown = true;
-            dtpGioKetThuc.Location = new Point(145, 195);
-            dtpGioKetThuc.Size = new Size(220, 27);
-
-            nudSoPhutNghi.Location = new Point(590, 75);
+            dtpGioKetThuc.Location = new Point(428, 104);
+            dtpGioKetThuc.Size = new Size(160, 27);
+            nudSoPhutNghi.Location = new Point(438, 24);
             nudSoPhutNghi.Maximum = 600;
             nudSoPhutNghi.Size = new Size(120, 27);
-
-            nudDiMuon.Location = new Point(590, 115);
+            nudDiMuon.Location = new Point(438, 64);
             nudDiMuon.Maximum = 120;
             nudDiMuon.Size = new Size(120, 27);
-
-            nudVeSom.Location = new Point(590, 155);
+            nudVeSom.Location = new Point(744, 24);
             nudVeSom.Maximum = 120;
             nudVeSom.Size = new Size(120, 27);
-
             chkQuaDem.AutoSize = true;
-            chkQuaDem.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            chkQuaDem.Location = new Point(430, 198);
+            chkQuaDem.Location = new Point(620, 69);
             chkQuaDem.Text = "Ca qua đêm";
-
             chkHoatDong.AutoSize = true;
-            chkHoatDong.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            chkHoatDong.Location = new Point(590, 198);
+            chkHoatDong.Location = new Point(744, 69);
             chkHoatDong.Text = "Hoạt động";
-
-            btnThem.Location = new Point(770, 72);
             btnThem.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnThem.Size = new Size(95, 35);
+            btnThem.Location = new Point(910, 22);
+            btnThem.Size = new Size(90, 34);
             btnThem.Text = "Thêm";
             btnThem.Click += btnThem_Click;
-
-            btnSua.Location = new Point(871, 72);
             btnSua.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnSua.Size = new Size(95, 35);
+            btnSua.Location = new Point(910, 62);
+            btnSua.Size = new Size(90, 34);
             btnSua.Text = "Sửa";
             btnSua.Click += btnSua_Click;
-
-            btnXoa.Location = new Point(972, 72);
             btnXoa.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnXoa.Size = new Size(95, 35);
+            btnXoa.Location = new Point(910, 102);
+            btnXoa.Size = new Size(90, 34);
             btnXoa.Text = "Xóa";
             btnXoa.Click += btnXoa_Click;
-
-            btnLamMoi.Location = new Point(770, 118);
             btnLamMoi.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnLamMoi.Size = new Size(297, 35);
+            btnLamMoi.Location = new Point(770, 102);
+            btnLamMoi.Size = new Size(130, 34);
             btnLamMoi.Text = "Làm mới";
             btnLamMoi.Click += btnLamMoi_Click;
-
-            dgvCaLamViec.Location = new Point(31, 255);
             dgvCaLamViec.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dgvCaLamViec.Size = new Size(1036, 330);
+            dgvCaLamViec.Location = new Point(24, 292);
+            dgvCaLamViec.Size = new Size(1030, 384);
             dgvCaLamViec.CellClick += dgvCaLamViec_CellClick;
-
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoScroll = true;
-            ClientSize = new Size(1100, 620);
-            MinimumSize = new Size(1040, 650);
+            BackColor = Color.FromArgb(236, 243, 250);
+            ClientSize = new Size(1080, 700);
+            MinimumSize = new Size(1040, 680);
             Controls.Add(dgvCaLamViec);
-            Controls.Add(btnLamMoi);
-            Controls.Add(btnXoa);
-            Controls.Add(btnSua);
-            Controls.Add(btnThem);
-            Controls.Add(chkHoatDong);
-            Controls.Add(chkQuaDem);
-            Controls.Add(nudVeSom);
-            Controls.Add(nudDiMuon);
-            Controls.Add(nudSoPhutNghi);
-            Controls.Add(dtpGioKetThuc);
-            Controls.Add(dtpGioBatDau);
-            Controls.Add(txtTenCa);
-            Controls.Add(txtMaCa);
-            Controls.Add(lblVeSom);
-            Controls.Add(lblDiMuon);
-            Controls.Add(lblSoPhutNghi);
-            Controls.Add(lblGioKetThuc);
-            Controls.Add(lblGioBatDau);
-            Controls.Add(lblTenCa);
-            Controls.Add(lblMaCa);
+            Controls.Add(pnlThongTin);
+            Controls.Add(lblMoTaForm);
             Controls.Add(lblTieuDe);
             Name = "FrmCaLamViec";
             Text = "Ca làm việc";
             Load += FrmCaLamViec_Load;
+            pnlThongTin.ResumeLayout(false);
+            pnlThongTin.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)nudSoPhutNghi).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudDiMuon).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudVeSom).EndInit();

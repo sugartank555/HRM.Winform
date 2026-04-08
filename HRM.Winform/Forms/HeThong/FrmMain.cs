@@ -79,8 +79,20 @@ namespace HRM.Winform.Forms.HeThong
             pnlSidebarFooter.Padding = new Padding(24, 18, 24, 22);
             pnlHeader.Padding = new Padding(28, 18, 28, 18);
             pnlMainContent.Padding = new Padding(22, 20, 22, 22);
-            pnlDashboard.Padding = new Padding(0);
+            pnlDashboard.Padding = new Padding(0, 4, 0, 18);
             pnlFormHost.Padding = new Padding(1);
+
+            flpAiHighlights.Padding = new Padding(0);
+            flpAiHighlights.Margin = new Padding(0);
+            flpAiHighlights.AutoSize = false;
+            flpAiHighlights.FlowDirection = FlowDirection.LeftToRight;
+            flpAiHighlights.WrapContents = true;
+
+            flpQuickActions.Padding = new Padding(0);
+            flpQuickActions.Margin = new Padding(0);
+            flpQuickActions.AutoSize = false;
+            flpQuickActions.FlowDirection = FlowDirection.LeftToRight;
+            flpQuickActions.WrapContents = true;
         }
 
         private void ConfigureActionButton(Button button, Color backColor, Color foreColor, FlatStyle flatStyle = FlatStyle.Flat)
@@ -349,15 +361,12 @@ namespace HRM.Winform.Forms.HeThong
             int month = now.Month;
             int year = now.Year;
 
-            string canhBaoTitle = "Canh bao thang nay";
             string canhBaoValue = "0 muc do cao";
             string canhBaoDesc = "Chua co canh bao bat thuong dang chu y.";
 
-            string xacThucTitle = "Check-in thong minh hom nay";
             string xacThucValue = "0 thanh cong";
             string xacThucDesc = "Theo doi QR, GPS va KhuonMat trong ngay.";
 
-            string insightTitle = "Insight quan tri";
             string insightValue = "On dinh";
             string insightDesc = "He thong se dua ra nhan xet nhanh tu du lieu hien tai.";
 
@@ -411,49 +420,57 @@ namespace HRM.Winform.Forms.HeThong
             var panel = new Panel
             {
                 Width = 240,
-                Height = 140,
-                Margin = new Padding(0, 0, 18, 18),
+                Height = 156,
+                Margin = new Padding(0, 0, 20, 20),
                 BackColor = ThemeHelper.CardBackColor,
-                Padding = new Padding(18)
+                Padding = new Padding(18, 18, 18, 16)
             };
 
             var line = new Panel
             {
-                Dock = DockStyle.Top,
+                Width = panel.Width - 36,
                 Height = 6,
-                BackColor = accentColor
+                BackColor = accentColor,
+                Location = new Point(18, 16)
             };
 
             var lblTitle = new Label
             {
-                Dock = DockStyle.Top,
-                Height = 26,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                AutoSize = false,
+                Location = new Point(18, 34),
+                Size = new Size(panel.Width - 36, 26),
+                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
                 ForeColor = ThemeHelper.TextSecondary,
                 Text = title
             };
 
             var lblValue = new Label
             {
-                Dock = DockStyle.Top,
-                Height = 48,
-                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
+                AutoSize = false,
+                Location = new Point(18, 64),
+                Size = new Size(panel.Width - 36, 52),
+                Font = new Font("Segoe UI", 27F, FontStyle.Bold),
                 ForeColor = ThemeHelper.TextPrimary,
                 Text = value
             };
 
             var lblDescription = new Label
             {
-                Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 9F),
+                AutoSize = false,
+                Location = new Point(18, 116),
+                Size = new Size(panel.Width - 36, 28),
+                Font = new Font("Segoe UI", 9.25F),
                 ForeColor = ThemeHelper.TextSecondary,
-                Text = description
+                Text = description,
+                AutoEllipsis = true
             };
 
-            panel.Controls.Add(lblDescription);
-            panel.Controls.Add(lblValue);
-            panel.Controls.Add(lblTitle);
             panel.Controls.Add(line);
+            panel.Controls.Add(lblTitle);
+            panel.Controls.Add(lblValue);
+            panel.Controls.Add(lblDescription);
+            panel.Paint += DashboardCard_Paint;
+            panel.Tag = accentColor;
 
             return panel;
         }
@@ -463,8 +480,8 @@ namespace HRM.Winform.Forms.HeThong
             var card = new Panel
             {
                 Width = 262,
-                Height = 128,
-                Margin = new Padding(0, 0, 18, 18),
+                Height = 138,
+                Margin = new Padding(0, 0, 20, 20),
                 BackColor = ThemeHelper.CardBackColor,
                 Padding = new Padding(18),
                 Cursor = Cursors.Hand,
@@ -495,9 +512,9 @@ namespace HRM.Winform.Forms.HeThong
             var lblTitle = new Label
             {
                 Location = new Point(78, 16),
-                Width = 160,
-                Height = 28,
-                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
+                Width = 170,
+                Height = 30,
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 ForeColor = ThemeHelper.TextPrimary,
                 Text = module.Title
             };
@@ -505,16 +522,18 @@ namespace HRM.Winform.Forms.HeThong
             var lblDesc = new Label
             {
                 Location = new Point(78, 46),
-                Width = 166,
-                Height = 58,
-                Font = new Font("Segoe UI", 9F),
+                Width = 172,
+                Height = 68,
+                Font = new Font("Segoe UI", 9.25F),
                 ForeColor = ThemeHelper.TextSecondary,
-                Text = module.Description
+                Text = module.Description,
+                AutoEllipsis = true
             };
 
             card.Controls.Add(badge);
             card.Controls.Add(lblTitle);
             card.Controls.Add(lblDesc);
+            card.Paint += DashboardNeutralCard_Paint;
 
             card.Click += (_, _) => OpenModule(module.Key);
             foreach (Control child in card.Controls)
@@ -530,18 +549,25 @@ namespace HRM.Winform.Forms.HeThong
             var card = new Panel
             {
                 Width = 320,
-                Height = 148,
-                Margin = new Padding(0, 0, 18, 18),
+                Height = 164,
+                Margin = new Padding(0, 0, 20, 20),
                 BackColor = backColor,
-                Padding = new Padding(18)
+                Padding = new Padding(20, 18, 20, 18)
+            };
+
+            var toneBar = new Panel
+            {
+                Location = new Point(0, 0),
+                Size = new Size(card.Width, 6),
+                BackColor = foreColor
             };
 
             var lblTitle = new Label
             {
                 AutoSize = false,
-                Location = new Point(18, 18),
-                Size = new Size(card.Width - 36, 22),
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Location = new Point(20, 24),
+                Size = new Size(card.Width - 40, 24),
+                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
                 ForeColor = foreColor,
                 Text = title
             };
@@ -549,9 +575,9 @@ namespace HRM.Winform.Forms.HeThong
             var lblValue = new Label
             {
                 AutoSize = false,
-                Location = new Point(18, 46),
-                Size = new Size(card.Width - 36, 34),
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
+                Location = new Point(20, 56),
+                Size = new Size(card.Width - 40, 40),
+                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
                 ForeColor = foreColor,
                 Text = value
             };
@@ -559,44 +585,107 @@ namespace HRM.Winform.Forms.HeThong
             var lblDescription = new Label
             {
                 AutoSize = false,
-                Location = new Point(18, 86),
-                Size = new Size(card.Width - 36, 44),
-                Font = new Font("Segoe UI", 9F),
+                Location = new Point(20, 102),
+                Size = new Size(card.Width - 40, 48),
+                Font = new Font("Segoe UI", 9.25F),
                 ForeColor = foreColor,
-                Text = description
+                Text = description,
+                AutoEllipsis = true
             };
 
+            card.Controls.Add(toneBar);
             card.Controls.Add(lblTitle);
             card.Controls.Add(lblValue);
             card.Controls.Add(lblDescription);
+            card.Paint += DashboardSoftCard_Paint;
             return card;
         }
 
         private void ApplyResponsiveDashboardLayout()
         {
+            const int sectionGap = 20;
             int contentWidth = Math.Max(760, pnlDashboard.ClientSize.Width - 56);
+
+            lblDashboardTitle.Left = 28;
+            lblDashboardSubtitle.Left = 28;
             tlpStats.Width = contentWidth;
             flpAiHighlights.Width = contentWidth;
             flpQuickActions.Width = contentWidth;
+            tlpStats.Height = 164;
+            tlpStats.Left = 28;
+            flpAiHighlights.Left = 28;
+            flpQuickActions.Left = 28;
 
-            int statWidth = Math.Max(180, (contentWidth - 54) / 4);
+            tlpStats.Top = lblDashboardSubtitle.Bottom + 18;
+
+            int statWidth = Math.Max(210, (contentWidth - (sectionGap * 4)) / 4);
             foreach (Control control in tlpStats.Controls)
             {
                 control.Width = statWidth;
-                control.Margin = new Padding(0, 0, 18, 18);
+                control.Height = 156;
+                control.Margin = new Padding(0, 0, sectionGap, sectionGap);
             }
 
-            int aiWidth = Math.Max(220, (contentWidth - 36) / 3);
+            int aiColumns = contentWidth >= 1100 ? 3 : contentWidth >= 760 ? 2 : 1;
+            int aiWidth = Math.Max(260, (contentWidth - (aiColumns * sectionGap)) / aiColumns);
             foreach (Control control in flpAiHighlights.Controls)
             {
                 control.Width = aiWidth;
+                control.Height = 164;
+                control.Margin = new Padding(0, 0, sectionGap, sectionGap);
             }
+            int aiRows = Math.Max(1, (int)Math.Ceiling(flpAiHighlights.Controls.Count / (double)aiColumns));
+            flpAiHighlights.Height = (aiRows * 164) + ((aiRows - 1) * 20) + 4;
+            lblAiHighlights.Left = 28;
+            lblAiHighlights.Top = tlpStats.Bottom + 10;
+            flpAiHighlights.Top = lblAiHighlights.Bottom + 12;
 
-            int quickWidth = Math.Max(220, (contentWidth - 18) / 2);
+            int quickColumns = contentWidth >= 1200 ? 3 : contentWidth >= 760 ? 2 : 1;
+            int quickWidth = Math.Max(240, (contentWidth - (quickColumns * sectionGap)) / quickColumns);
             foreach (Control control in flpQuickActions.Controls)
             {
                 control.Width = quickWidth;
+                control.Height = 138;
+                control.Margin = new Padding(0, 0, sectionGap, sectionGap);
             }
+            int quickRows = Math.Max(1, (int)Math.Ceiling(flpQuickActions.Controls.Count / (double)quickColumns));
+            flpQuickActions.Height = (quickRows * 138) + ((quickRows - 1) * 20) + 4;
+            lblQuickActions.Left = 28;
+            lblQuickActions.Top = flpAiHighlights.Bottom + 14;
+            flpQuickActions.Top = lblQuickActions.Bottom + 12;
+        }
+
+        private static void DashboardCard_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel)
+            {
+                return;
+            }
+
+            using var pen = new Pen(Color.FromArgb(226, 232, 240));
+            e.Graphics.DrawRectangle(pen, 0, 0, panel.Width - 1, panel.Height - 1);
+        }
+
+        private static void DashboardNeutralCard_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel)
+            {
+                return;
+            }
+
+            using var pen = new Pen(Color.FromArgb(226, 232, 240));
+            e.Graphics.DrawRectangle(pen, 0, 0, panel.Width - 1, panel.Height - 1);
+        }
+
+        private static void DashboardSoftCard_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel)
+            {
+                return;
+            }
+
+            using var pen = new Pen(Color.FromArgb(219, 234, 254));
+            e.Graphics.DrawRectangle(pen, 0, 0, panel.Width - 1, panel.Height - 1);
         }
 
         private void btnDashboard_Click(object sender, EventArgs e)

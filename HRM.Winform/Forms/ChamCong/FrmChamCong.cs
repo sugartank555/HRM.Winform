@@ -18,6 +18,7 @@ namespace HRM.Winform.Forms.ChamCong
 
         private void FrmChamCong_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
             _gridHelper ??= new DataGridSearchPaginationHelper(dgvChamCong);
             TaiNhanVien();
@@ -25,6 +26,26 @@ namespace HRM.Winform.Forms.ChamCong
             TaiDuLieu();
             LamMoi();
             TaiTrangThai();
+            ApplyResponsiveLayout();
+            Resize += (_, _) => ApplyResponsiveLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+            ThemeHelper.ApplyCard(pnlThongTin);
+            ThemeHelper.ApplyInput(cboNhanVien);
+            ThemeHelper.ApplyInput(cboCaLamViec);
+            ThemeHelper.ApplyInput(cboTrangThai);
+            ThemeHelper.ApplyInput(txtGhiChu);
+            ThemeHelper.ApplySecondaryButton(btnTuTinhGio);
+            ThemeHelper.ApplyPrimaryButton(btnThem);
+            ThemeHelper.ApplySecondaryButton(btnSua);
+            ThemeHelper.ApplyDangerButton(btnXoa);
+            ThemeHelper.ApplySecondaryButton(btnLamMoi);
+            ThemeHelper.ApplyDataGrid(dgvChamCong);
         }
 
         private void TaiTrangThai()
@@ -435,6 +456,56 @@ namespace HRM.Winform.Forms.ChamCong
             nudTangCa.Value = (decimal)cc.SoGioTangCa;
             cboTrangThai.Text = cc.TrangThai;
             txtGhiChu.Text = cc.GhiChu ?? "";
+        }
+
+        private void ApplyResponsiveLayout()
+        {
+            int panelRight = pnlThongTin.ClientSize.Width - 24;
+            int buttonWidth = 95;
+            int gap = 6;
+
+            btnSua.SetBounds(panelRight - buttonWidth, 23, buttonWidth, 35);
+            btnThem.SetBounds(btnSua.Left - gap - buttonWidth, 23, buttonWidth, 35);
+            btnLamMoi.SetBounds(panelRight - buttonWidth, 66, buttonWidth, 35);
+            btnXoa.SetBounds(btnLamMoi.Left - gap - buttonWidth, 66, buttonWidth, 35);
+
+            int dateWidth = 120;
+            dtpNgayLamViec.Left = btnThem.Left - 20 - dateWidth;
+            lblNgayLamViec.Left = dtpNgayLamViec.Left - lblNgayLamViec.Width - 10;
+
+            cboCaLamViec.Left = lblNgayLamViec.Left - 18 - cboCaLamViec.Width;
+            lblCaLamViec.Left = cboCaLamViec.Left - lblCaLamViec.Width - 10;
+
+            cboNhanVien.Width = Math.Max(220, lblCaLamViec.Left - 24 - cboNhanVien.Left);
+
+            int secondRowRight = btnXoa.Left - 20;
+            nudVeSom.Left = secondRowRight - nudVeSom.Width;
+            lblVeSom.Left = nudVeSom.Left - lblVeSom.Width - 10;
+
+            nudDiMuon.Left = lblVeSom.Left - 18 - nudDiMuon.Width;
+            lblDiMuon.Left = nudDiMuon.Left - lblDiMuon.Width - 10;
+
+            dtpCheckOut.Width = 180;
+            dtpCheckOut.Left = lblDiMuon.Left - 18 - dtpCheckOut.Width;
+            lblCheckOut.Left = dtpCheckOut.Left - lblCheckOut.Width - 10;
+
+            dtpCheckIn.Width = 180;
+            dtpCheckIn.Left = lblCheckOut.Left - 18 - dtpCheckIn.Width;
+            lblCheckIn.Left = dtpCheckIn.Left - lblCheckIn.Width - 10;
+
+            cboTrangThai.Left = Math.Min(628, panelRight - 24 - cboTrangThai.Width);
+            lblTrangThai.Left = cboTrangThai.Left - lblTrangThai.Width - 10;
+
+            btnTuTinhGio.Left = lblTrangThai.Left - 18 - btnTuTinhGio.Width;
+            nudTangCa.Left = btnTuTinhGio.Left - 18 - nudTangCa.Width;
+            lblTangCa.Left = nudTangCa.Left - lblTangCa.Width - 10;
+
+            nudSoGioLam.Left = lblTangCa.Left - 18 - nudSoGioLam.Width;
+            lblSoGioLam.Left = nudSoGioLam.Left - lblSoGioLam.Width - 10;
+
+            txtGhiChu.Width = Math.Max(420, panelRight - 24 - txtGhiChu.Left);
+
+            _gridHelper?.RefreshLayout();
         }
     }
 }

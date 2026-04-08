@@ -8,6 +8,8 @@ namespace HRM.Winform.Forms.CaNhan
     {
         private readonly Panel[] _summaryPanels;
         private DataGridSearchPaginationHelper? _historyGridHelper;
+        private readonly List<string> _thongBaoCaNhan = [];
+        private bool _thangHienTaiDaChot;
 
         public FrmChamCongThongMinh()
         {
@@ -21,6 +23,7 @@ namespace HRM.Winform.Forms.CaNhan
             ApplyStyle();
             ApplyResponsiveLayout();
             TaiTongQuan();
+            TaiThongBaoCaNhan();
             TaiLichSuGanDay();
             Resize += (_, _) => ApplyResponsiveLayout();
         }
@@ -56,6 +59,13 @@ namespace HRM.Winform.Forms.CaNhan
             ConfigureSummaryCard(pnlShift, lblShiftTitle, lblShiftValue, lblShiftDetail, Color.FromArgb(14, 165, 233));
             ConfigureSummaryCard(pnlReminder, lblReminderTitle, lblReminderValue, lblReminderDetail, ThemeHelper.SecondaryAccent);
             ConfigureSummaryCard(pnlStats, lblStatsTitle, lblStatsValue, lblStatsDetail, ThemeHelper.WarmAccent);
+
+            pnlNotifications.BackColor = ThemeHelper.CardBackColor;
+            pnlNotifications.Paint -= SummaryCard_Paint;
+            pnlNotifications.Paint += SummaryCard_Paint;
+            pnlNotifications.Tag = Color.FromArgb(59, 130, 246);
+            lblNotificationsTitle.ForeColor = ThemeHelper.TextPrimary;
+            flpNotifications.BackColor = ThemeHelper.CardBackColor;
 
             ThemeHelper.ApplyDataGrid(dgvHistory);
             dgvHistory.AutoGenerateColumns = false;
@@ -176,6 +186,7 @@ namespace HRM.Winform.Forms.CaNhan
 
             bool singleColumn = ClientSize.Width < 1180;
             RebuildSummaryGrid(singleColumn);
+            ApplyNotificationLayout(singleColumn);
         }
 
         private void RebuildSummaryGrid(bool singleColumn)
@@ -221,11 +232,23 @@ namespace HRM.Winform.Forms.CaNhan
             tlpSummary.ResumeLayout();
         }
 
+        private void ApplyNotificationLayout(bool singleColumn)
+        {
+            int preferredNotificationHeight = _thongBaoCaNhan.Count <= 1 ? 150 : Math.Min(280, 92 + (_thongBaoCaNhan.Count * 56));
+            int minimumHistoryHeight = singleColumn ? 260 : 280;
+            int availableForNotifications = Math.Max(140, ClientSize.Height - pnlTop.Height - tlpSummary.Height - minimumHistoryHeight - 20);
+            int targetHeight = singleColumn ? Math.Max(170, preferredNotificationHeight) : Math.Max(150, preferredNotificationHeight - 10);
+
+            pnlNotifications.Height = Math.Min(targetHeight, availableForNotifications);
+            RenderThongBao(singleColumn);
+        }
+
         private void TaiTongQuan()
         {
             using var db = new AppDbContext();
 
             var homNay = DateTime.Today;
+            _thangHienTaiDaChot = MonthlyAttendanceLockStore.IsLocked(homNay);
             var dauThang = new DateTime(homNay.Year, homNay.Month, 1);
             var cuoiThang = dauThang.AddMonths(1).AddDays(-1);
 
@@ -249,10 +272,37 @@ namespace HRM.Winform.Forms.CaNhan
                 .Where(x => x.NhanVienId == CurrentUser.NhanVienId && x.TrangThai == "DaDuyet" && x.NgayLam >= dauThang && x.NgayLam <= cuoiThang)
                 .Sum(x => (double?)x.TongSoGio) ?? 0;
 
-            lblStatusValue.Text = chamCongHomNay == null ? "Chua check in" : chamCongHomNay.TrangThai;
-            lblStatusDetail.Text = chamCongHomNay == null
-                ? "Hom nay ban chua co ban ghi cham cong."
-                : $"Check in: {FormatDateTime(chamCongHomNay.GioCheckIn)}  |  Check out: {FormatDateTime(chamCongHomNay.GioCheckOut)}";
+            var tongPhepNamDaDuyet = db.DonNghiPheps
+                .AsNoTracking()
+                .Where(x => x.NhanVienId == CurrentUser.NhanVienId
+                    && x.TrangThai == "DaDuyet"
+                    && x.LoaiNghiPhep != null
+                    && x.LoaiNghiPhep.MaLoaiNghi == "LP001"
+                    && x.TuNgay.Year == homNay.Year)
+                .Sum(x => (decimal?)x.TongSoNgay) ?? 0;
+
+            var tongDonChoDuyet = db.DonNghiPheps
+                .AsNoTracking()
+                .Count(x => x.NhanVienId == CurrentUser.NhanVienId && x.TrangThai == "ChoDuyet")
+                + db.DonTangCas
+                .AsNoTracking()
+                .Count(x => x.NhanVienId == CurrentUser.NhanVienId && x.TrangThai == "ChoDuyet");
+
+            const decimal tongPhepNamMacDinh = 12m;
+            decimal phepConLai = Math.Max(0, tongPhepNamMacDinh - tongPhepNamDaDuyet);
+
+            if (_thangHienTaiDaChot && chamCongHomNay == null)
+            {
+                lblStatusValue.Text = "Thang da chot";
+                lblStatusDetail.Text = $"Thang {homNay.Month:00}/{homNay.Year} da duoc chot nen hom nay khong the tao them bang cong.";
+            }
+            else
+            {
+                lblStatusValue.Text = chamCongHomNay == null ? "Chua check in" : chamCongHomNay.TrangThai;
+                lblStatusDetail.Text = chamCongHomNay == null
+                    ? "Hom nay ban chua co ban ghi cham cong."
+                    : $"Check in: {FormatDateTime(chamCongHomNay.GioCheckIn)}  |  Check out: {FormatDateTime(chamCongHomNay.GioCheckOut)}";
+            }
 
             lblShiftValue.Text = caHomNay?.CaLamViec?.TenCa ?? "Chua phan ca";
             lblShiftDetail.Text = caHomNay?.CaLamViec == null
@@ -262,10 +312,137 @@ namespace HRM.Winform.Forms.CaNhan
             lblReminderValue.Text = GetReminder(chamCongHomNay, caHomNay?.CaLamViec?.GioBatDau);
             lblReminderDetail.Text = "Nhac check-in/check-out, canh bao quen cham cong va goi y xu ly.";
 
-            lblStatsValue.Text = $"{dsThang.Sum(x => x.SoGioLam):N1} gio";
-            lblStatsDetail.Text = $"Di muon: {dsThang.Sum(x => x.SoPhutDiMuon)} phut  |  Tang ca da duyet: {tongTangCa:N1} gio";
+            lblStatsTitle.Text = "Phep va tong quan";
+            lblStatsValue.Text = $"{phepConLai:N1} ngay";
+            lblStatsDetail.Text = $"Phep nam con lai  |  Di muon: {dsThang.Sum(x => x.SoPhutDiMuon)} phut  |  OT duyet: {tongTangCa:N1} gio  |  Don cho: {tongDonChoDuyet}";
 
             lblLastSync.Text = $"Cap nhat luc {DateTime.Now:HH:mm:ss dd/MM/yyyy}";
+            CapNhatTrangThaiNut(chamCongHomNay);
+        }
+
+        private void TaiThongBaoCaNhan()
+        {
+            using var db = new AppDbContext();
+
+            var homNay = DateTime.Today;
+            var dauThang = new DateTime(homNay.Year, homNay.Month, 1);
+            _thongBaoCaNhan.Clear();
+
+            var chamCongHomNay = db.ChamCongs
+                .AsNoTracking()
+                .FirstOrDefault(x => x.NhanVienId == CurrentUser.NhanVienId && x.NgayLamViec == homNay);
+
+            var caHomNay = db.PhanCaNhanViens
+                .AsNoTracking()
+                .Include(x => x.CaLamViec)
+                .FirstOrDefault(x => x.NhanVienId == CurrentUser.NhanVienId && x.NgayLamViec == homNay);
+
+            var donChoDuyet = db.DonNghiPheps
+                .AsNoTracking()
+                .Count(x => x.NhanVienId == CurrentUser.NhanVienId && x.TrangThai == "ChoDuyet");
+
+            var tangCaChoDuyet = db.DonTangCas
+                .AsNoTracking()
+                .Count(x => x.NhanVienId == CurrentUser.NhanVienId && x.TrangThai == "ChoDuyet");
+
+            var xacThucThatBaiGanNhat = AttendanceAuditStore.LoadAll()
+                .Where(x => x.NhanVienId == CurrentUser.NhanVienId && x.KetQua == "ThatBai")
+                .OrderByDescending(x => x.ThoiGian)
+                .FirstOrDefault();
+
+            var tongDiMuonThang = db.ChamCongs
+                .AsNoTracking()
+                .Where(x => x.NhanVienId == CurrentUser.NhanVienId && x.NgayLamViec >= dauThang && x.NgayLamViec <= homNay)
+                .Sum(x => (int?)x.SoPhutDiMuon) ?? 0;
+
+            if (_thangHienTaiDaChot && chamCongHomNay == null)
+            {
+                _thongBaoCaNhan.Add($"Bang cong thang {homNay.Month:00}/{homNay.Year} da duoc chot. Hom nay chua co bang cong va ban khong the check in them.");
+            }
+            else if (caHomNay?.CaLamViec != null && chamCongHomNay == null)
+            {
+                _thongBaoCaNhan.Add($"Ca hom nay: {caHomNay.CaLamViec.TenCa} ({caHomNay.CaLamViec.GioBatDau:hh\\:mm} - {caHomNay.CaLamViec.GioKetThuc:hh\\:mm}). Ban chua check in.");
+            }
+
+            if (chamCongHomNay?.GioCheckIn.HasValue == true && !chamCongHomNay.GioCheckOut.HasValue)
+            {
+                _thongBaoCaNhan.Add($"Ban da check in luc {chamCongHomNay.GioCheckIn.Value:HH:mm}. Nho check out cuoi ca de tranh thieu cong.");
+            }
+
+            if (donChoDuyet > 0 || tangCaChoDuyet > 0)
+            {
+                _thongBaoCaNhan.Add($"Ban co {donChoDuyet} don nghi phep va {tangCaChoDuyet} don tang ca dang cho duyet.");
+            }
+
+            if (tongDiMuonThang >= 15)
+            {
+                _thongBaoCaNhan.Add($"Thang nay ban da di muon tong {tongDiMuonThang} phut. Nen chu dong vao ca som hon de tranh bi tru cong.");
+            }
+
+            if (xacThucThatBaiGanNhat != null)
+            {
+                _thongBaoCaNhan.Add($"Lan xac thuc that bai gan nhat: {xacThucThatBaiGanNhat.PhuongThuc} luc {xacThucThatBaiGanNhat.ThoiGian:HH:mm dd/MM}.");
+            }
+
+            if (_thongBaoCaNhan.Count == 0)
+            {
+                _thongBaoCaNhan.Add("Hom nay ban khong co canh bao nao. Tiep tuc giu nhip cham cong deu va dung gio.");
+            }
+
+            ApplyNotificationLayout(ClientSize.Width < 1180);
+        }
+
+        private void RenderThongBao(bool singleColumn)
+        {
+            flpNotifications.SuspendLayout();
+            flpNotifications.Controls.Clear();
+
+            int cardWidth = Math.Max(260, flpNotifications.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 8);
+            int cardHeight = singleColumn ? 46 : 42;
+
+            for (int i = 0; i < _thongBaoCaNhan.Count; i++)
+            {
+                var card = new Panel
+                {
+                    Width = cardWidth,
+                    Height = cardHeight,
+                    Margin = new Padding(0, 0, 0, 10),
+                    BackColor = i == 0 ? Color.FromArgb(239, 246, 255) : Color.FromArgb(248, 250, 252),
+                    Tag = i == 0 ? Color.FromArgb(37, 99, 235) : Color.FromArgb(14, 165, 233)
+                };
+
+                var label = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Text = _thongBaoCaNhan[i],
+                    Padding = new Padding(18, 10, 12, 10),
+                    Font = new Font("Segoe UI", 10F),
+                    ForeColor = ThemeHelper.TextPrimary,
+                    AutoEllipsis = true
+                };
+
+                card.Controls.Add(label);
+                card.Paint += NotificationCard_Paint;
+                flpNotifications.Controls.Add(card);
+            }
+
+            flpNotifications.ResumeLayout();
+        }
+
+        private static void NotificationCard_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel)
+            {
+                return;
+            }
+
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            var bounds = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
+            using var borderPen = new Pen(Color.FromArgb(226, 232, 240));
+            using var accentBrush = new SolidBrush(panel.Tag is Color accent ? accent : Color.FromArgb(37, 99, 235));
+
+            e.Graphics.FillRectangle(accentBrush, 0, 0, 6, panel.Height);
+            e.Graphics.DrawRectangle(borderPen, bounds);
         }
 
         private static string FormatDateTime(DateTime? value)
@@ -275,6 +452,11 @@ namespace HRM.Winform.Forms.CaNhan
 
         private string GetReminder(Models.ChamCong? chamCong, TimeSpan? gioBatDau)
         {
+            if (_thangHienTaiDaChot && chamCong == null)
+            {
+                return "Thang hien tai da chot, khong the tao bang cong hom nay.";
+            }
+
             if (chamCong == null)
             {
                 return gioBatDau.HasValue && DateTime.Now.TimeOfDay > gioBatDau.Value
@@ -659,6 +841,7 @@ namespace HRM.Winform.Forms.CaNhan
             GhiNhatKyChamCong("CheckOut", "ThuCong", "ThanhCong", $"Check out luc {chamCong.GioCheckOut:HH:mm dd/MM}.");
             MessageBox.Show("Check out thanh cong.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Information);
             TaiTongQuan();
+            TaiThongBaoCaNhan();
             TaiLichSuGanDay();
         }
 
@@ -757,7 +940,50 @@ namespace HRM.Winform.Forms.CaNhan
         private void btnLamMoi_Click(object sender, EventArgs e)
         {
             TaiTongQuan();
+            TaiThongBaoCaNhan();
             TaiLichSuGanDay();
+        }
+
+        private void CapNhatTrangThaiNut(Models.ChamCong? chamCongHomNay)
+        {
+            bool coCheckIn = chamCongHomNay?.GioCheckIn.HasValue == true;
+            bool coCheckOut = chamCongHomNay?.GioCheckOut.HasValue == true;
+
+            bool choPhepCheckIn = !_thangHienTaiDaChot && !coCheckIn;
+            bool choPhepCheckOut = !_thangHienTaiDaChot && coCheckIn && !coCheckOut;
+
+            SetActionButtonState(btnKhuonMat, choPhepCheckIn, _thangHienTaiDaChot ? "Thang da chot" : "Check in khuon");
+            SetActionButtonState(btnQr, choPhepCheckIn, _thangHienTaiDaChot ? "Thang da chot" : "Check in QR");
+            SetActionButtonState(btnGps, choPhepCheckIn, _thangHienTaiDaChot ? "Thang da chot" : "Check in GPS");
+            SetActionButtonState(btnCheckOut, choPhepCheckOut, _thangHienTaiDaChot ? "Thang da chot" : "Check out");
+        }
+
+        private static void SetActionButtonState(Button button, bool enabled, string textWhenEnabled)
+        {
+            button.Enabled = enabled;
+            button.Text = enabled ? textWhenEnabled : "Da khoa";
+            button.BackColor = enabled ? GetDefaultButtonColor(button) : Color.FromArgb(203, 213, 225);
+            button.ForeColor = enabled ? Color.White : Color.FromArgb(71, 85, 105);
+        }
+
+        private static Color GetDefaultButtonColor(Button button)
+        {
+            if (button.Name == nameof(btnQr))
+            {
+                return ThemeHelper.SecondaryAccent;
+            }
+
+            if (button.Name == nameof(btnGps))
+            {
+                return ThemeHelper.WarmAccent;
+            }
+
+            if (button.Name == nameof(btnCheckOut))
+            {
+                return ThemeHelper.DangerColor;
+            }
+
+            return ThemeHelper.PrimaryColor;
         }
     }
 }

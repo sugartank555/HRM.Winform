@@ -1,11 +1,12 @@
-﻿using HRM.Winform.Data;
+using HRM.Winform.Data;
+using HRM.Winform.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Winform.Forms.ChamCong
 {
     public partial class FrmBangCongNgay : Form
     {
-        private HRM.Winform.Helpers.DataGridSearchPaginationHelper? _gridHelper;
+        private DataGridSearchPaginationHelper? _gridHelper;
 
         public FrmBangCongNgay()
         {
@@ -14,9 +15,23 @@ namespace HRM.Winform.Forms.ChamCong
 
         private void FrmBangCongNgay_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
-            _gridHelper ??= new HRM.Winform.Helpers.DataGridSearchPaginationHelper(dgvBangCongNgay);
+            _gridHelper ??= new DataGridSearchPaginationHelper(dgvBangCongNgay);
             TaiDuLieu();
+            _gridHelper?.RefreshLayout();
+            Resize += (_, _) => _gridHelper?.RefreshLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+            lblTong.ForeColor = ThemeHelper.TextPrimary;
+            ThemeHelper.ApplyCard(pnlLoc);
+            ThemeHelper.ApplySecondaryButton(btnXem);
+            ThemeHelper.ApplyDataGrid(dgvBangCongNgay);
         }
 
         private void CaiDatGrid()

@@ -30,12 +30,28 @@ namespace HRM.Winform.Forms.BaoCao
 
         private void FrmBaoCaoChamCong_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
             _gridHelper ??= new DataGridSearchPaginationHelper(dgvBaoCaoChamCong);
             TaiNhanVien();
             nudThang.Value = DateTime.Today.Month;
             nudNam.Value = DateTime.Today.Year;
             TaiDuLieu();
+            _gridHelper?.RefreshLayout();
+            Resize += (_, _) => _gridHelper?.RefreshLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+            lblTong.ForeColor = ThemeHelper.TextPrimary;
+            ThemeHelper.ApplyCard(pnlLoc);
+            ThemeHelper.ApplySecondaryButton(btnXem);
+            ThemeHelper.ApplyPrimaryButton(btnXuatExcel);
+            ThemeHelper.ApplyInput(cboNhanVien);
+            ThemeHelper.ApplyDataGrid(dgvBaoCaoChamCong);
         }
 
         private void CaiDatGrid()

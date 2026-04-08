@@ -1,11 +1,12 @@
-﻿using HRM.Winform.Data;
+using HRM.Winform.Data;
+using HRM.Winform.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Winform.Forms.BaoCao
 {
     public partial class FrmBaoCaoNghiPhep : Form
     {
-        private HRM.Winform.Helpers.DataGridSearchPaginationHelper? _gridHelper;
+        private DataGridSearchPaginationHelper? _gridHelper;
 
         public FrmBaoCaoNghiPhep()
         {
@@ -14,10 +15,26 @@ namespace HRM.Winform.Forms.BaoCao
 
         private void FrmBaoCaoNghiPhep_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             CaiDatGrid();
-            _gridHelper ??= new HRM.Winform.Helpers.DataGridSearchPaginationHelper(dgvBaoCaoNghiPhep);
+            _gridHelper ??= new DataGridSearchPaginationHelper(dgvBaoCaoNghiPhep);
             TaiLoaiNghi();
             TaiDuLieu();
+            _gridHelper?.RefreshLayout();
+            Resize += (_, _) => _gridHelper?.RefreshLayout();
+        }
+
+        private void ApplyStyle()
+        {
+            BackColor = ThemeHelper.AppBackColor;
+            lblTieuDe.ForeColor = ThemeHelper.TextPrimary;
+            lblMoTa.ForeColor = ThemeHelper.TextSecondary;
+            lblTong.ForeColor = ThemeHelper.TextPrimary;
+            ThemeHelper.ApplyCard(pnlLoc);
+            ThemeHelper.ApplySecondaryButton(btnXem);
+            ThemeHelper.ApplyInput(cboLoaiNghi);
+            ThemeHelper.ApplyInput(cboTrangThai);
+            ThemeHelper.ApplyDataGrid(dgvBaoCaoNghiPhep);
         }
 
         private void CaiDatGrid()

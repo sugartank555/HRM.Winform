@@ -1,4 +1,4 @@
-﻿namespace HRM.Winform.Forms.BaoCao
+namespace HRM.Winform.Forms.BaoCao
 {
     partial class FrmBaoCaoChamCong
     {
@@ -11,10 +11,12 @@
         }
 
         private Label lblTieuDe;
+        private Label lblMoTa;
         private Label lblThang;
         private Label lblNam;
         private Label lblNhanVien;
         private Label lblTong;
+        private Panel pnlLoc;
         private NumericUpDown nudThang;
         private NumericUpDown nudNam;
         private ComboBox cboNhanVien;
@@ -25,90 +27,94 @@
         private void InitializeComponent()
         {
             lblTieuDe = new Label();
+            lblMoTa = new Label();
             lblThang = new Label();
             lblNam = new Label();
             lblNhanVien = new Label();
             lblTong = new Label();
+            pnlLoc = new Panel();
             nudThang = new NumericUpDown();
             nudNam = new NumericUpDown();
             cboNhanVien = new ComboBox();
             btnXem = new Button();
             btnXuatExcel = new Button();
             dgvBaoCaoChamCong = new DataGridView();
+            pnlLoc.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudThang).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudNam).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dgvBaoCaoChamCong).BeginInit();
             SuspendLayout();
-
             lblTieuDe.AutoSize = true;
-            lblTieuDe.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblTieuDe.Location = new Point(24, 16);
-            lblTieuDe.Text = "BÁO CÁO CHẤM CÔNG";
-
+            lblTieuDe.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            lblTieuDe.Location = new Point(24, 18);
+            lblTieuDe.Text = "Báo cáo chấm công";
+            lblMoTa.AutoSize = true;
+            lblMoTa.Location = new Point(28, 62);
+            lblMoTa.Text = "Tổng hợp chấm công theo tháng để theo dõi ngày công, tăng ca, đi muộn và vắng mặt.";
+            pnlLoc.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            pnlLoc.Controls.Add(lblTong);
+            pnlLoc.Controls.Add(btnXuatExcel);
+            pnlLoc.Controls.Add(btnXem);
+            pnlLoc.Controls.Add(cboNhanVien);
+            pnlLoc.Controls.Add(nudNam);
+            pnlLoc.Controls.Add(nudThang);
+            pnlLoc.Controls.Add(lblNhanVien);
+            pnlLoc.Controls.Add(lblNam);
+            pnlLoc.Controls.Add(lblThang);
+            pnlLoc.Location = new Point(24, 100);
+            pnlLoc.Size = new Size(1148, 84);
             lblThang.AutoSize = true;
-            lblThang.Location = new Point(28, 70);
+            lblThang.Location = new Point(24, 31);
             lblThang.Text = "Tháng";
-            nudThang.Location = new Point(82, 67);
+            nudThang.Location = new Point(78, 27);
             nudThang.Minimum = 1;
             nudThang.Maximum = 12;
             nudThang.Size = new Size(70, 27);
-
             lblNam.AutoSize = true;
-            lblNam.Location = new Point(175, 70);
+            lblNam.Location = new Point(172, 31);
             lblNam.Text = "Năm";
-            nudNam.Location = new Point(220, 67);
+            nudNam.Location = new Point(217, 27);
             nudNam.Minimum = 2000;
             nudNam.Maximum = 3000;
             nudNam.Size = new Size(90, 27);
-
             lblNhanVien.AutoSize = true;
-            lblNhanVien.Location = new Point(340, 70);
+            lblNhanVien.Location = new Point(334, 31);
             lblNhanVien.Text = "Nhân viên";
             cboNhanVien.DropDownStyle = ComboBoxStyle.DropDownList;
-            cboNhanVien.Location = new Point(410, 67);
+            cboNhanVien.Location = new Point(406, 27);
             cboNhanVien.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            cboNhanVien.Size = new Size(260, 28);
-
-            btnXem.Location = new Point(695, 64);
+            cboNhanVien.Size = new Size(320, 28);
             btnXem.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnXem.Size = new Size(90, 32);
+            btnXem.Location = new Point(754, 24);
+            btnXem.Size = new Size(90, 34);
             btnXem.Text = "Xem";
             btnXem.Click += btnXem_Click;
-
-            btnXuatExcel.Location = new Point(792, 64);
             btnXuatExcel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnXuatExcel.Size = new Size(110, 32);
-            btnXuatExcel.Text = "Xuat Excel";
+            btnXuatExcel.Location = new Point(850, 24);
+            btnXuatExcel.Size = new Size(110, 34);
+            btnXuatExcel.Text = "Xuất Excel";
             btnXuatExcel.Click += btnXuatExcel_Click;
-
             lblTong.AutoSize = true;
-            lblTong.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lblTong.Location = new Point(918, 70);
+            lblTong.Location = new Point(982, 31);
             lblTong.Text = "Tổng số nhân viên: 0";
-
-            dgvBaoCaoChamCong.Location = new Point(28, 120);
             dgvBaoCaoChamCong.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dgvBaoCaoChamCong.Size = new Size(1140, 480);
-
+            dgvBaoCaoChamCong.Location = new Point(24, 208);
+            dgvBaoCaoChamCong.Size = new Size(1148, 486);
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoScroll = true;
-            ClientSize = new Size(1200, 630);
-            MinimumSize = new Size(1120, 680);
+            BackColor = Color.FromArgb(236, 243, 250);
+            ClientSize = new Size(1200, 730);
+            MinimumSize = new Size(1120, 700);
             Controls.Add(dgvBaoCaoChamCong);
-            Controls.Add(lblTong);
-            Controls.Add(btnXuatExcel);
-            Controls.Add(btnXem);
-            Controls.Add(cboNhanVien);
-            Controls.Add(nudNam);
-            Controls.Add(nudThang);
-            Controls.Add(lblNhanVien);
-            Controls.Add(lblNam);
-            Controls.Add(lblThang);
+            Controls.Add(pnlLoc);
+            Controls.Add(lblMoTa);
             Controls.Add(lblTieuDe);
             Name = "FrmBaoCaoChamCong";
             Text = "Báo cáo chấm công";
             Load += FrmBaoCaoChamCong_Load;
+            pnlLoc.ResumeLayout(false);
+            pnlLoc.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)nudThang).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudNam).EndInit();
             ((System.ComponentModel.ISupportInitialize)dgvBaoCaoChamCong).EndInit();
