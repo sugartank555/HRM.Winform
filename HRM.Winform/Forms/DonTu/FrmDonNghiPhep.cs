@@ -175,6 +175,49 @@ namespace HRM.Winform.Forms.DonTu
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(txtLyDo.Text))
+            {
+                MessageBox.Show("Vui lòng nhập lý do nghỉ.");
+                txtLyDo.Focus();
+                return false;
+            }
+
+            int tongSoNgayThucTe = (dtpDenNgay.Value.Date - dtpTuNgay.Value.Date).Days + 1;
+            if (nudTongSoNgay.Value != tongSoNgayThucTe)
+            {
+                MessageBox.Show("Tổng số ngày nghỉ không khớp với khoảng thời gian đã chọn.");
+                nudTongSoNgay.Focus();
+                return false;
+            }
+
+            using var db = new AppDbContext();
+            int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
+            var nhanVien = db.NhanViens.AsNoTracking().FirstOrDefault(x => x.Id == nhanVienId);
+            if (nhanVien == null || !nhanVien.DangLamViec)
+            {
+                MessageBox.Show("Chỉ được tạo đơn nghỉ cho nhân viên đang làm việc.");
+                return false;
+            }
+
+            if (dtpTuNgay.Value.Date < nhanVien.NgayVaoLam.Date)
+            {
+                MessageBox.Show("Ngày nghỉ không được trước ngày vào làm của nhân viên.");
+                return false;
+            }
+
+            bool trungLich = db.DonNghiPheps.Any(x =>
+                x.NhanVienId == nhanVienId
+                && x.Id != _idDangChon
+                && x.TrangThai != "TuChoi"
+                && x.TuNgay.Date <= dtpDenNgay.Value.Date
+                && dtpTuNgay.Value.Date <= x.DenNgay.Date);
+
+            if (trungLich)
+            {
+                MessageBox.Show("Nhân viên đã có đơn nghỉ phép khác bị trùng thời gian.");
+                return false;
+            }
+
             return true;
         }
 
@@ -197,7 +240,7 @@ namespace HRM.Winform.Forms.DonTu
                 TuNgay = dtpTuNgay.Value.Date,
                 DenNgay = dtpDenNgay.Value.Date,
                 TongSoNgay = nudTongSoNgay.Value,
-                LyDo = txtLyDo.Text.Trim(),
+                LyDo = ValidationHelper.NormalizeText(txtLyDo.Text),
                 TrangThai = cboTrangThai.Text,
                 NgayTao = DateTime.Now
             });
@@ -232,7 +275,7 @@ namespace HRM.Winform.Forms.DonTu
             don.TuNgay = dtpTuNgay.Value.Date;
             don.DenNgay = dtpDenNgay.Value.Date;
             don.TongSoNgay = nudTongSoNgay.Value;
-            don.LyDo = txtLyDo.Text.Trim();
+            don.LyDo = ValidationHelper.NormalizeText(txtLyDo.Text);
             don.TrangThai = cboTrangThai.Text;
             don.NgayCapNhat = DateTime.Now;
 

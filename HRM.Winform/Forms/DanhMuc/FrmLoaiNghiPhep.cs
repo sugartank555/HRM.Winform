@@ -76,8 +76,23 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private bool KiemTraDuLieu()
         {
-            if (string.IsNullOrWhiteSpace(txtMaLoaiNghi.Text)) { MessageBox.Show("Vui lòng nhập mã loại nghỉ!"); txtMaLoaiNghi.Focus(); return false; }
-            if (string.IsNullOrWhiteSpace(txtTenLoaiNghi.Text)) { MessageBox.Show("Vui lòng nhập tên loại nghỉ!"); txtTenLoaiNghi.Focus(); return false; }
+            var maLoaiNghi = ValidationHelper.NormalizeCode(txtMaLoaiNghi.Text);
+            var tenLoaiNghi = ValidationHelper.NormalizeText(txtTenLoaiNghi.Text);
+
+            if (string.IsNullOrWhiteSpace(maLoaiNghi))
+            {
+                MessageBox.Show("Vui lòng nhập mã loại nghỉ!");
+                txtMaLoaiNghi.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(tenLoaiNghi))
+            {
+                MessageBox.Show("Vui lòng nhập tên loại nghỉ!");
+                txtTenLoaiNghi.Focus();
+                return false;
+            }
+
             return true;
         }
 
@@ -85,13 +100,27 @@ namespace HRM.Winform.Forms.DanhMuc
         {
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
-            if (db.LoaiNghiPheps.Any(x => x.MaLoaiNghi == txtMaLoaiNghi.Text.Trim())) { MessageBox.Show("Mã loại nghỉ đã tồn tại!"); return; }
+            string ma = ValidationHelper.NormalizeCode(txtMaLoaiNghi.Text);
+            string ten = ValidationHelper.NormalizeText(txtTenLoaiNghi.Text);
+
+            if (db.LoaiNghiPheps.Any(x => x.MaLoaiNghi == ma))
+            {
+                MessageBox.Show("Mã loại nghỉ đã tồn tại!");
+                return;
+            }
+
+            if (db.LoaiNghiPheps.Any(x => x.TenLoaiNghi == ten))
+            {
+                MessageBox.Show("Tên loại nghỉ đã tồn tại!");
+                return;
+            }
+
             db.LoaiNghiPheps.Add(new LoaiNghiPhep
             {
-                MaLoaiNghi = txtMaLoaiNghi.Text.Trim(),
-                TenLoaiNghi = txtTenLoaiNghi.Text.Trim(),
+                MaLoaiNghi = ma,
+                TenLoaiNghi = ten,
                 HuongLuong = chkHuongLuong.Checked,
-                MoTa = txtMoTa.Text.Trim(),
+                MoTa = ValidationHelper.NormalizeOptional(txtMoTa.Text),
                 NgayTao = DateTime.Now
             });
             db.SaveChanges();
@@ -102,16 +131,40 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnSua_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn loại nghỉ cần sửa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn loại nghỉ cần sửa!");
+                return;
+            }
+
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
             var loai = db.LoaiNghiPheps.FirstOrDefault(x => x.Id == _idDangChon);
-            if (loai == null) { MessageBox.Show("Không tìm thấy loại nghỉ!"); return; }
-            if (db.LoaiNghiPheps.Any(x => x.MaLoaiNghi == txtMaLoaiNghi.Text.Trim() && x.Id != _idDangChon)) { MessageBox.Show("Mã loại nghỉ đã tồn tại!"); return; }
-            loai.MaLoaiNghi = txtMaLoaiNghi.Text.Trim();
-            loai.TenLoaiNghi = txtTenLoaiNghi.Text.Trim();
+            if (loai == null)
+            {
+                MessageBox.Show("Không tìm thấy loại nghỉ!");
+                return;
+            }
+
+            string ma = ValidationHelper.NormalizeCode(txtMaLoaiNghi.Text);
+            string ten = ValidationHelper.NormalizeText(txtTenLoaiNghi.Text);
+
+            if (db.LoaiNghiPheps.Any(x => x.MaLoaiNghi == ma && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Mã loại nghỉ đã tồn tại!");
+                return;
+            }
+
+            if (db.LoaiNghiPheps.Any(x => x.TenLoaiNghi == ten && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Tên loại nghỉ đã tồn tại!");
+                return;
+            }
+
+            loai.MaLoaiNghi = ma;
+            loai.TenLoaiNghi = ten;
             loai.HuongLuong = chkHuongLuong.Checked;
-            loai.MoTa = txtMoTa.Text.Trim();
+            loai.MoTa = ValidationHelper.NormalizeOptional(txtMoTa.Text);
             loai.NgayCapNhat = DateTime.Now;
             db.SaveChanges();
             MessageBox.Show("Cập nhật loại nghỉ phép thành công!");
@@ -121,12 +174,27 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn loại nghỉ cần xóa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn loại nghỉ cần xóa!");
+                return;
+            }
+
             if (MessageBox.Show("Bạn có chắc muốn xóa loại nghỉ này không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             using var db = new AppDbContext();
             var loai = db.LoaiNghiPheps.Include(x => x.DanhSachDonNghiPhep).FirstOrDefault(x => x.Id == _idDangChon);
-            if (loai == null) { MessageBox.Show("Không tìm thấy loại nghỉ!"); return; }
-            if (loai.DanhSachDonNghiPhep.Any()) { MessageBox.Show("Loại nghỉ đã phát sinh dữ liệu, không thể xóa!"); return; }
+            if (loai == null)
+            {
+                MessageBox.Show("Không tìm thấy loại nghỉ!");
+                return;
+            }
+
+            if (loai.DanhSachDonNghiPhep.Any())
+            {
+                MessageBox.Show("Loại nghỉ đã phát sinh dữ liệu, không thể xóa!");
+                return;
+            }
+
             db.LoaiNghiPheps.Remove(loai);
             db.SaveChanges();
             MessageBox.Show("Xóa loại nghỉ phép thành công!");

@@ -92,12 +92,12 @@ namespace HRM.Winform.Forms.BaoCao
             pnlSummaryHost.BackColor = Color.Transparent;
 
             flpCards.Location = new Point(0, 0);
-            flpCards.Size = new Size(1272, 96);
+            flpCards.Size = new Size(1272, 120);
             flpCards.WrapContents = false;
             flpCards.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             flpCards.BackColor = Color.Transparent;
 
-            pnlSummaryText.Location = new Point(0, 114);
+            pnlSummaryText.Location = new Point(0, 132);
             pnlSummaryText.Size = new Size(1272, 108);
             pnlSummaryText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             pnlSummaryText.Padding = new Padding(20, 18, 20, 18);
@@ -244,9 +244,9 @@ namespace HRM.Winform.Forms.BaoCao
             var panel = new Panel
             {
                 Width = 300,
-                Height = 96,
+                Height = 112,
                 Margin = new Padding(0, 0, 18, 0),
-                Padding = new Padding(18, 16, 18, 14)
+                Padding = new Padding(18, 14, 18, 14)
             };
             ThemeHelper.ApplyCard(panel);
 
@@ -260,7 +260,7 @@ namespace HRM.Winform.Forms.BaoCao
             {
                 AutoSize = false,
                 Location = new Point(20, 16),
-                Size = new Size(250, 22),
+                Size = new Size(252, 22),
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 ForeColor = ThemeHelper.TextSecondary,
                 Text = title
@@ -269,21 +269,23 @@ namespace HRM.Winform.Forms.BaoCao
             var lblValue = new Label
             {
                 AutoSize = false,
-                Location = new Point(20, 40),
-                Size = new Size(120, 28),
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
+                Location = new Point(20, 42),
+                Size = new Size(252, 30),
+                Font = new Font("Segoe UI", 17F, FontStyle.Bold),
                 ForeColor = ThemeHelper.TextPrimary,
-                Text = value
+                Text = value,
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             var lblDesc = new Label
             {
                 AutoSize = false,
-                Location = new Point(140, 38),
-                Size = new Size(136, 36),
+                Location = new Point(20, 74),
+                Size = new Size(252, 24),
                 Font = new Font("Segoe UI", 8.8F),
                 ForeColor = ThemeHelper.TextSecondary,
-                Text = description
+                Text = description,
+                AutoEllipsis = true
             };
 
             panel.Controls.Add(lblTitle);

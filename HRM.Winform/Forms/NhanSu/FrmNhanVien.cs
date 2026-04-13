@@ -268,17 +268,66 @@ namespace HRM.Winform.Forms.NhanSu
 
         private bool KiemTraDuLieu()
         {
-            if (string.IsNullOrWhiteSpace(txtMaNhanVien.Text))
+            var maNhanVien = ValidationHelper.NormalizeCode(txtMaNhanVien.Text);
+            var hoTen = ValidationHelper.NormalizeText(txtHoTen.Text);
+            var soDienThoai = ValidationHelper.NormalizeText(txtSoDienThoai.Text);
+            var email = ValidationHelper.NormalizeOptional(txtEmail.Text);
+            var cccd = ValidationHelper.NormalizeOptional(txtCCCD.Text);
+            var tuoi = ValidationHelper.CalculateFullAge(dtpNgaySinh.Value.Date, DateTime.Today);
+
+            if (string.IsNullOrWhiteSpace(maNhanVien))
             {
                 MessageBox.Show("Vui lòng nhập mã nhân viên!");
                 txtMaNhanVien.Focus();
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(txtHoTen.Text))
+            if (string.IsNullOrWhiteSpace(hoTen))
             {
                 MessageBox.Show("Vui lòng nhập họ tên!");
                 txtHoTen.Focus();
+                return false;
+            }
+
+            if (tuoi < 18 || tuoi > 70)
+            {
+                MessageBox.Show("Ngày sinh không hợp lệ. Nhân viên phải trong độ tuổi lao động từ 18 đến 70.");
+                dtpNgaySinh.Focus();
+                return false;
+            }
+
+            if (!ValidationHelper.IsValidVietnamesePhone(soDienThoai))
+            {
+                MessageBox.Show("Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng số điện thoại Việt Nam.");
+                txtSoDienThoai.Focus();
+                return false;
+            }
+
+            if (email != null && !ValidationHelper.IsValidEmail(email))
+            {
+                MessageBox.Show("Email không đúng định dạng.");
+                txtEmail.Focus();
+                return false;
+            }
+
+            if (cccd != null && !ValidationHelper.IsValidCitizenId(cccd))
+            {
+                MessageBox.Show("CCCD phải gồm đúng 12 chữ số.");
+                txtCCCD.Focus();
+                return false;
+            }
+
+            if (dtpNgayVaoLam.Value.Date < dtpNgaySinh.Value.Date.AddYears(18))
+            {
+                MessageBox.Show("Ngày vào làm không hợp lệ so với ngày sinh.");
+                dtpNgayVaoLam.Focus();
+                return false;
+            }
+
+            if (nudLuongCoBan.Value <= 0)
+            {
+                MessageBox.Show("Lương cơ bản phải lớn hơn 0.");
+                nudLuongCoBan.Focus();
                 return false;
             }
 
@@ -305,23 +354,44 @@ namespace HRM.Winform.Forms.NhanSu
 
             using var db = new AppDbContext();
 
-            string ma = txtMaNhanVien.Text.Trim();
+            string ma = ValidationHelper.NormalizeCode(txtMaNhanVien.Text);
+            string soDienThoai = ValidationHelper.NormalizeText(txtSoDienThoai.Text);
+            string? email = ValidationHelper.NormalizeOptional(txtEmail.Text);
+            string? cccd = ValidationHelper.NormalizeOptional(txtCCCD.Text);
             if (db.NhanViens.Any(x => x.MaNhanVien == ma))
             {
                 MessageBox.Show("Mã nhân viên đã tồn tại!");
                 return;
             }
 
+            if (db.NhanViens.Any(x => x.SoDienThoai == soDienThoai))
+            {
+                MessageBox.Show("Số điện thoại đã tồn tại!");
+                return;
+            }
+
+            if (email != null && db.NhanViens.Any(x => x.Email == email))
+            {
+                MessageBox.Show("Email đã tồn tại!");
+                return;
+            }
+
+            if (cccd != null && db.NhanViens.Any(x => x.CCCD == cccd))
+            {
+                MessageBox.Show("CCCD đã tồn tại!");
+                return;
+            }
+
             db.NhanViens.Add(new NhanVien
             {
-                MaNhanVien = txtMaNhanVien.Text.Trim(),
-                HoTen = txtHoTen.Text.Trim(),
+                MaNhanVien = ma,
+                HoTen = ValidationHelper.NormalizeText(txtHoTen.Text),
                 NgaySinh = dtpNgaySinh.Value.Date,
                 GioiTinh = rdoNam.Checked,
-                SoDienThoai = txtSoDienThoai.Text.Trim(),
-                Email = txtEmail.Text.Trim(),
-                DiaChi = txtDiaChi.Text.Trim(),
-                CCCD = txtCCCD.Text.Trim(),
+                SoDienThoai = soDienThoai,
+                Email = email,
+                DiaChi = ValidationHelper.NormalizeOptional(txtDiaChi.Text),
+                CCCD = cccd,
                 NgayVaoLam = dtpNgayVaoLam.Value.Date,
                 LuongCoBan = nudLuongCoBan.Value,
                 DangLamViec = chkDangLamViec.Checked,
@@ -355,21 +425,42 @@ namespace HRM.Winform.Forms.NhanSu
                 return;
             }
 
-            string ma = txtMaNhanVien.Text.Trim();
+            string ma = ValidationHelper.NormalizeCode(txtMaNhanVien.Text);
+            string soDienThoai = ValidationHelper.NormalizeText(txtSoDienThoai.Text);
+            string? email = ValidationHelper.NormalizeOptional(txtEmail.Text);
+            string? cccd = ValidationHelper.NormalizeOptional(txtCCCD.Text);
             if (db.NhanViens.Any(x => x.MaNhanVien == ma && x.Id != _idDangChon))
             {
                 MessageBox.Show("Mã nhân viên đã tồn tại!");
                 return;
             }
 
-            nhanVien.MaNhanVien = txtMaNhanVien.Text.Trim();
-            nhanVien.HoTen = txtHoTen.Text.Trim();
+            if (db.NhanViens.Any(x => x.SoDienThoai == soDienThoai && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Số điện thoại đã tồn tại!");
+                return;
+            }
+
+            if (email != null && db.NhanViens.Any(x => x.Email == email && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Email đã tồn tại!");
+                return;
+            }
+
+            if (cccd != null && db.NhanViens.Any(x => x.CCCD == cccd && x.Id != _idDangChon))
+            {
+                MessageBox.Show("CCCD đã tồn tại!");
+                return;
+            }
+
+            nhanVien.MaNhanVien = ma;
+            nhanVien.HoTen = ValidationHelper.NormalizeText(txtHoTen.Text);
             nhanVien.NgaySinh = dtpNgaySinh.Value.Date;
             nhanVien.GioiTinh = rdoNam.Checked;
-            nhanVien.SoDienThoai = txtSoDienThoai.Text.Trim();
-            nhanVien.Email = txtEmail.Text.Trim();
-            nhanVien.DiaChi = txtDiaChi.Text.Trim();
-            nhanVien.CCCD = txtCCCD.Text.Trim();
+            nhanVien.SoDienThoai = soDienThoai;
+            nhanVien.Email = email;
+            nhanVien.DiaChi = ValidationHelper.NormalizeOptional(txtDiaChi.Text);
+            nhanVien.CCCD = cccd;
             nhanVien.NgayVaoLam = dtpNgayVaoLam.Value.Date;
             nhanVien.LuongCoBan = nudLuongCoBan.Value;
             nhanVien.DangLamViec = chkDangLamViec.Checked;

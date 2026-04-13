@@ -75,8 +75,23 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private bool KiemTraDuLieu()
         {
-            if (string.IsNullOrWhiteSpace(txtMaPhongBan.Text)) { MessageBox.Show("Vui lòng nhập mã phòng ban!"); txtMaPhongBan.Focus(); return false; }
-            if (string.IsNullOrWhiteSpace(txtTenPhongBan.Text)) { MessageBox.Show("Vui lòng nhập tên phòng ban!"); txtTenPhongBan.Focus(); return false; }
+            var maPhongBan = ValidationHelper.NormalizeCode(txtMaPhongBan.Text);
+            var tenPhongBan = ValidationHelper.NormalizeText(txtTenPhongBan.Text);
+
+            if (string.IsNullOrWhiteSpace(maPhongBan))
+            {
+                MessageBox.Show("Vui lòng nhập mã phòng ban!");
+                txtMaPhongBan.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(tenPhongBan))
+            {
+                MessageBox.Show("Vui lòng nhập tên phòng ban!");
+                txtTenPhongBan.Focus();
+                return false;
+            }
+
             return true;
         }
 
@@ -84,15 +99,31 @@ namespace HRM.Winform.Forms.DanhMuc
         {
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
-            string ma = txtMaPhongBan.Text.Trim();
-            if (db.PhongBans.Any(x => x.MaPhongBan == ma)) { MessageBox.Show("Mã phòng ban đã tồn tại!"); txtMaPhongBan.Focus(); return; }
+            string ma = ValidationHelper.NormalizeCode(txtMaPhongBan.Text);
+            string ten = ValidationHelper.NormalizeText(txtTenPhongBan.Text);
+
+            if (db.PhongBans.Any(x => x.MaPhongBan == ma))
+            {
+                MessageBox.Show("Mã phòng ban đã tồn tại!");
+                txtMaPhongBan.Focus();
+                return;
+            }
+
+            if (db.PhongBans.Any(x => x.TenPhongBan == ten))
+            {
+                MessageBox.Show("Tên phòng ban đã tồn tại!");
+                txtTenPhongBan.Focus();
+                return;
+            }
+
             var phongBan = new PhongBan
             {
-                MaPhongBan = txtMaPhongBan.Text.Trim(),
-                TenPhongBan = txtTenPhongBan.Text.Trim(),
-                MoTa = txtMoTa.Text.Trim(),
+                MaPhongBan = ma,
+                TenPhongBan = ten,
+                MoTa = ValidationHelper.NormalizeOptional(txtMoTa.Text),
                 NgayTao = DateTime.Now
             };
+
             db.PhongBans.Add(phongBan);
             db.SaveChanges();
             MessageBox.Show("Thêm phòng ban thành công!");
@@ -102,16 +133,41 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnSua_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn phòng ban cần sửa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn phòng ban cần sửa!");
+                return;
+            }
+
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
             var phongBan = db.PhongBans.FirstOrDefault(x => x.Id == _idDangChon);
-            if (phongBan == null) { MessageBox.Show("Không tìm thấy phòng ban!"); return; }
-            string ma = txtMaPhongBan.Text.Trim();
-            if (db.PhongBans.Any(x => x.MaPhongBan == ma && x.Id != _idDangChon)) { MessageBox.Show("Mã phòng ban đã tồn tại!"); txtMaPhongBan.Focus(); return; }
-            phongBan.MaPhongBan = txtMaPhongBan.Text.Trim();
-            phongBan.TenPhongBan = txtTenPhongBan.Text.Trim();
-            phongBan.MoTa = txtMoTa.Text.Trim();
+            if (phongBan == null)
+            {
+                MessageBox.Show("Không tìm thấy phòng ban!");
+                return;
+            }
+
+            string ma = ValidationHelper.NormalizeCode(txtMaPhongBan.Text);
+            string ten = ValidationHelper.NormalizeText(txtTenPhongBan.Text);
+
+            if (db.PhongBans.Any(x => x.MaPhongBan == ma && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Mã phòng ban đã tồn tại!");
+                txtMaPhongBan.Focus();
+                return;
+            }
+
+            if (db.PhongBans.Any(x => x.TenPhongBan == ten && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Tên phòng ban đã tồn tại!");
+                txtTenPhongBan.Focus();
+                return;
+            }
+
+            phongBan.MaPhongBan = ma;
+            phongBan.TenPhongBan = ten;
+            phongBan.MoTa = ValidationHelper.NormalizeOptional(txtMoTa.Text);
             phongBan.NgayCapNhat = DateTime.Now;
             db.SaveChanges();
             MessageBox.Show("Cập nhật phòng ban thành công!");
@@ -121,12 +177,27 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn phòng ban cần xóa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn phòng ban cần xóa!");
+                return;
+            }
+
             if (MessageBox.Show("Bạn có chắc muốn xóa phòng ban này không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             using var db = new AppDbContext();
             var phongBan = db.PhongBans.Include(x => x.DanhSachNhanVien).FirstOrDefault(x => x.Id == _idDangChon);
-            if (phongBan == null) { MessageBox.Show("Không tìm thấy phòng ban!"); return; }
-            if (phongBan.DanhSachNhanVien.Any()) { MessageBox.Show("Phòng ban đang có nhân viên, không thể xóa!"); return; }
+            if (phongBan == null)
+            {
+                MessageBox.Show("Không tìm thấy phòng ban!");
+                return;
+            }
+
+            if (phongBan.DanhSachNhanVien.Any())
+            {
+                MessageBox.Show("Phòng ban đang có nhân viên, không thể xóa!");
+                return;
+            }
+
             db.PhongBans.Remove(phongBan);
             db.SaveChanges();
             MessageBox.Show("Xóa phòng ban thành công!");

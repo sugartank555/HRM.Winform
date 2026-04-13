@@ -47,21 +47,21 @@ namespace HRM.Winform.Forms.CaNhan
 
             ConfigureGrid(dgvNghiPhep);
             dgvNghiPhep.Columns.Clear();
-            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tu ngay", DataPropertyName = "TuNgay", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
-            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Den ngay", DataPropertyName = "DenNgay", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
-            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Loai nghi", DataPropertyName = "TenLoaiNghi", Width = 150 });
-            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "So ngay", DataPropertyName = "TongSoNgay", Width = 90 });
-            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trang thai", DataPropertyName = "TrangThai", Width = 110 });
-            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Ly do", DataPropertyName = "LyDo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Từ ngày", DataPropertyName = "TuNgay", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
+            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Đến ngày", DataPropertyName = "DenNgay", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
+            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Loại nghỉ", DataPropertyName = "TenLoaiNghi", Width = 150 });
+            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Số ngày", DataPropertyName = "TongSoNgay", Width = 90 });
+            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", DataPropertyName = "TrangThai", Width = 110 });
+            dgvNghiPhep.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Lý do", DataPropertyName = "LyDo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
 
             ConfigureGrid(dgvTangCa);
             dgvTangCa.Columns.Clear();
-            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Ngay lam", DataPropertyName = "NgayLam", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
-            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tu gio", DataPropertyName = "TuGio", Width = 130, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy HH:mm" } });
-            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Den gio", DataPropertyName = "DenGio", Width = 130, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy HH:mm" } });
-            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tong gio", DataPropertyName = "TongSoGio", Width = 90 });
-            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trang thai", DataPropertyName = "TrangThai", Width = 110 });
-            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Ly do", DataPropertyName = "LyDo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
+            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Ngày làm", DataPropertyName = "NgayLam", Width = 100, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" } });
+            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Từ giờ", DataPropertyName = "TuGio", Width = 130, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy HH:mm" } });
+            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Đến giờ", DataPropertyName = "DenGio", Width = 130, DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy HH:mm" } });
+            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tổng giờ", DataPropertyName = "TongSoGio", Width = 90 });
+            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Trạng thái", DataPropertyName = "TrangThai", Width = 110 });
+            dgvTangCa.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Lý do", DataPropertyName = "LyDo", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
 
             _nghiPhepGridHelper ??= new DataGridSearchPaginationHelper(dgvNghiPhep);
             _tangCaGridHelper ??= new DataGridSearchPaginationHelper(dgvTangCa);
@@ -150,13 +150,60 @@ namespace HRM.Winform.Forms.CaNhan
                 return;
             }
 
+            if (dtpTuNgayNghi.Value.Date < DateTime.Today)
+            {
+                MessageBox.Show("Khong duoc gui don nghi phep voi ngay bat dau trong qua khu.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpTuNgayNghi.Focus();
+                return;
+            }
+
             if (dtpDenNgayNghi.Value.Date < dtpTuNgayNghi.Value.Date)
             {
                 MessageBox.Show("Den ngay phai lon hon hoac bang tu ngay.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(txtLyDoNghi.Text))
+            {
+                MessageBox.Show("Vui long nhap ly do nghi.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtLyDoNghi.Focus();
+                return;
+            }
+
+            decimal soNgayThucTe = (dtpDenNgayNghi.Value.Date - dtpTuNgayNghi.Value.Date).Days + 1;
+            if (nudTongSoNgay.Value != soNgayThucTe)
+            {
+                MessageBox.Show("Tong so ngay nghi khong khop voi khoang thoi gian da chon.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                nudTongSoNgay.Focus();
+                return;
+            }
+
             using var db = new AppDbContext();
+            var nhanVien = db.NhanViens.AsNoTracking().FirstOrDefault(x => x.Id == CurrentUser.NhanVienId);
+            if (nhanVien == null || !nhanVien.DangLamViec)
+            {
+                MessageBox.Show("Nhan vien khong con o trang thai lam viec.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (dtpTuNgayNghi.Value.Date < nhanVien.NgayVaoLam.Date)
+            {
+                MessageBox.Show("Ngay nghi khong duoc truoc ngay vao lam.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            bool trungLich = db.DonNghiPheps.Any(x =>
+                x.NhanVienId == CurrentUser.NhanVienId
+                && x.TrangThai != "TuChoi"
+                && x.TuNgay.Date <= dtpDenNgayNghi.Value.Date
+                && dtpTuNgayNghi.Value.Date <= x.DenNgay.Date);
+
+            if (trungLich)
+            {
+                MessageBox.Show("Da ton tai don nghi phep bi trung thoi gian.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             db.DonNghiPheps.Add(new DonNghiPhep
             {
                 NhanVienId = CurrentUser.NhanVienId,
@@ -164,7 +211,7 @@ namespace HRM.Winform.Forms.CaNhan
                 TuNgay = dtpTuNgayNghi.Value.Date,
                 DenNgay = dtpDenNgayNghi.Value.Date,
                 TongSoNgay = nudTongSoNgay.Value,
-                LyDo = txtLyDoNghi.Text.Trim(),
+                LyDo = ValidationHelper.NormalizeText(txtLyDoNghi.Text),
                 TrangThai = "ChoDuyet",
                 NgayTao = DateTime.Now
             });
@@ -178,13 +225,45 @@ namespace HRM.Winform.Forms.CaNhan
 
         private void btnGuiTangCa_Click(object sender, EventArgs e)
         {
+            if (dtpNgayTangCa.Value.Date < DateTime.Today)
+            {
+                MessageBox.Show("Khong duoc gui don tang ca cho ngay trong qua khu.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpNgayTangCa.Focus();
+                return;
+            }
+
             if (dtpDenGioTangCa.Value <= dtpTuGioTangCa.Value)
             {
                 MessageBox.Show("Den gio phai lon hon tu gio.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            if (dtpNgayTangCa.Value.Date != dtpTuGioTangCa.Value.Date || dtpNgayTangCa.Value.Date != dtpDenGioTangCa.Value.Date)
+            {
+                MessageBox.Show("Ngay lam phai trung voi ngay cua thoi gian tang ca.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtLyDoTangCa.Text))
+            {
+                MessageBox.Show("Vui long nhap ly do tang ca.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtLyDoTangCa.Focus();
+                return;
+            }
+
             using var db = new AppDbContext();
+            bool trungLich = db.DonTangCas.Any(x =>
+                x.NhanVienId == CurrentUser.NhanVienId
+                && x.TrangThai != "TuChoi"
+                && x.TuGio < dtpDenGioTangCa.Value
+                && dtpTuGioTangCa.Value < x.DenGio);
+
+            if (trungLich)
+            {
+                MessageBox.Show("Da ton tai don tang ca bi trung thoi gian.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             db.DonTangCas.Add(new DonTangCa
             {
                 NhanVienId = CurrentUser.NhanVienId,
@@ -192,7 +271,7 @@ namespace HRM.Winform.Forms.CaNhan
                 TuGio = dtpTuGioTangCa.Value,
                 DenGio = dtpDenGioTangCa.Value,
                 TongSoGio = Math.Round((dtpDenGioTangCa.Value - dtpTuGioTangCa.Value).TotalHours, 2),
-                LyDo = txtLyDoTangCa.Text.Trim(),
+                LyDo = ValidationHelper.NormalizeText(txtLyDoTangCa.Text),
                 TrangThai = "ChoDuyet",
                 NgayTao = DateTime.Now
             });

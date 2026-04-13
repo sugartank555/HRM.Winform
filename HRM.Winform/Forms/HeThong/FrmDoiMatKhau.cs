@@ -46,9 +46,16 @@ namespace HRM.Winform.Forms.HeThong
                 return;
             }
 
-            if (matKhauMoi.Length < 6)
+            if (!ValidationHelper.IsStrongEnoughPassword(matKhauMoi))
             {
                 MessageBox.Show("Mật khẩu mới phải từ 6 ký tự trở lên!");
+                txtMatKhauMoi.Focus();
+                return;
+            }
+
+            if (matKhauMoi == matKhauCu)
+            {
+                MessageBox.Show("Mật khẩu mới không được trùng mật khẩu cũ!");
                 txtMatKhauMoi.Focus();
                 return;
             }

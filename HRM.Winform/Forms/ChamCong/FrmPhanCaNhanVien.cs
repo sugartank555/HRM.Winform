@@ -210,6 +210,28 @@ namespace HRM.Winform.Forms.ChamCong
                 return false;
             }
 
+            if (dtpNgayLamViec.Value.Date < DateTime.Today)
+            {
+                MessageBox.Show("Không được phân ca cho ngày trong quá khứ.");
+                dtpNgayLamViec.Focus();
+                return false;
+            }
+
+            using var db = new AppDbContext();
+            int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
+            var nhanVien = db.NhanViens.AsNoTracking().FirstOrDefault(x => x.Id == nhanVienId);
+            if (nhanVien == null || !nhanVien.DangLamViec)
+            {
+                MessageBox.Show("Chỉ được phân ca cho nhân viên đang làm việc.");
+                return false;
+            }
+
+            if (dtpNgayLamViec.Value.Date < nhanVien.NgayVaoLam.Date)
+            {
+                MessageBox.Show("Ngày phân ca không được trước ngày vào làm của nhân viên.");
+                return false;
+            }
+
             return true;
         }
 

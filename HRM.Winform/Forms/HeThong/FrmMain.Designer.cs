@@ -94,9 +94,9 @@ namespace HRM.Winform.Forms.HeThong
             flpNavigation.AutoScroll = true;
             flpNavigation.Dock = DockStyle.Fill;
             flpNavigation.FlowDirection = FlowDirection.TopDown;
-            flpNavigation.Location = new Point(0, 112);
+            flpNavigation.Location = new Point(0, 96);
             flpNavigation.Name = "flpNavigation";
-            flpNavigation.Size = new Size(280, 563);
+            flpNavigation.Size = new Size(280, 579);
             flpNavigation.TabIndex = 1;
             flpNavigation.WrapContents = false;
             // 
@@ -105,29 +105,31 @@ namespace HRM.Winform.Forms.HeThong
             pnlSidebarFooter.Controls.Add(lblCurrentRole);
             pnlSidebarFooter.Controls.Add(lblCurrentUser);
             pnlSidebarFooter.Dock = DockStyle.Bottom;
-            pnlSidebarFooter.Location = new Point(0, 675);
+            pnlSidebarFooter.Location = new Point(0, 661);
             pnlSidebarFooter.Name = "pnlSidebarFooter";
-            pnlSidebarFooter.Size = new Size(280, 86);
+            pnlSidebarFooter.Size = new Size(280, 100);
             pnlSidebarFooter.TabIndex = 2;
             // 
             // lblCurrentRole
             // 
-            lblCurrentRole.AutoSize = true;
-            lblCurrentRole.Location = new Point(24, 44);
+            lblCurrentRole.AutoSize = false;
+            lblCurrentRole.Location = new Point(24, 54);
             lblCurrentRole.Name = "lblCurrentRole";
-            lblCurrentRole.Size = new Size(100, 20);
+            lblCurrentRole.Size = new Size(228, 22);
             lblCurrentRole.TabIndex = 1;
             lblCurrentRole.Text = "Role  |  @user";
+            lblCurrentRole.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // lblCurrentUser
             // 
-            lblCurrentUser.AutoSize = true;
+            lblCurrentUser.AutoSize = false;
             lblCurrentUser.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            lblCurrentUser.Location = new Point(24, 16);
+            lblCurrentUser.Location = new Point(24, 24);
             lblCurrentUser.Name = "lblCurrentUser";
-            lblCurrentUser.Size = new Size(145, 25);
+            lblCurrentUser.Size = new Size(228, 26);
             lblCurrentUser.TabIndex = 0;
             lblCurrentUser.Text = "Current User";
+            lblCurrentUser.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // pnlSidebarHeader
             // 
@@ -136,27 +138,29 @@ namespace HRM.Winform.Forms.HeThong
             pnlSidebarHeader.Dock = DockStyle.Top;
             pnlSidebarHeader.Location = new Point(0, 0);
             pnlSidebarHeader.Name = "pnlSidebarHeader";
-            pnlSidebarHeader.Size = new Size(280, 112);
+            pnlSidebarHeader.Size = new Size(280, 96);
             pnlSidebarHeader.TabIndex = 0;
             // 
             // lblAppSubtitle
             // 
-            lblAppSubtitle.AutoSize = true;
-            lblAppSubtitle.Location = new Point(24, 70);
+            lblAppSubtitle.AutoSize = false;
+            lblAppSubtitle.Location = new Point(24, 54);
             lblAppSubtitle.Name = "lblAppSubtitle";
-            lblAppSubtitle.Size = new Size(170, 20);
+            lblAppSubtitle.Size = new Size(220, 20);
             lblAppSubtitle.TabIndex = 1;
             lblAppSubtitle.Text = "Human Resource Manager";
+            lblAppSubtitle.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // lblAppName
             // 
-            lblAppName.AutoSize = true;
-            lblAppName.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblAppName.Location = new Point(24, 24);
+            lblAppName.AutoSize = false;
+            lblAppName.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblAppName.Location = new Point(24, 16);
             lblAppName.Name = "lblAppName";
-            lblAppName.Size = new Size(80, 37);
+            lblAppName.Size = new Size(220, 34);
             lblAppName.TabIndex = 0;
             lblAppName.Text = "HRM";
+            lblAppName.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // pnlShell
             // 

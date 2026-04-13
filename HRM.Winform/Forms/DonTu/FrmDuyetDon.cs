@@ -128,16 +128,41 @@ namespace HRM.Winform.Forms.DonTu
             _tangCaGridHelper?.ApplyData(ds);
         }
 
+        private bool CoTheDuyet(string trangThai)
+        {
+            if (trangThai != "ChoDuyet")
+            {
+                MessageBox.Show("Chỉ có thể xử lý đơn đang ở trạng thái chờ duyệt.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private string LayNguoiDuyet()
+        {
+            return string.IsNullOrWhiteSpace(CurrentUser.TenDangNhap) ? "Admin" : CurrentUser.TenDangNhap;
+        }
+
         private void btnDuyetNghiPhep_Click(object sender, EventArgs e)
         {
-            if (dgvNghiPhep.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn nghỉ phép!"); return; }
+            if (dgvNghiPhep.CurrentRow == null)
+            {
+                MessageBox.Show("Vui lòng chọn đơn nghỉ phép!");
+                return;
+            }
+
             int id = Convert.ToInt32(dgvNghiPhep.CurrentRow.Cells["Id"].Value);
+            string trangThai = dgvNghiPhep.CurrentRow.Cells["TrangThai"].Value?.ToString() ?? string.Empty;
+            if (!CoTheDuyet(trangThai)) return;
+
             using var db = new AppDbContext();
             var don = db.DonNghiPheps.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
+
             don.TrangThai = "DaDuyet";
             don.NgayDuyet = DateTime.Now;
-            don.NguoiDuyet = "Admin";
+            don.NguoiDuyet = LayNguoiDuyet();
             don.NgayCapNhat = DateTime.Now;
             db.SaveChanges();
             MessageBox.Show("Đã duyệt đơn nghỉ phép!");
@@ -146,14 +171,23 @@ namespace HRM.Winform.Forms.DonTu
 
         private void btnTuChoiNghiPhep_Click(object sender, EventArgs e)
         {
-            if (dgvNghiPhep.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn nghỉ phép!"); return; }
+            if (dgvNghiPhep.CurrentRow == null)
+            {
+                MessageBox.Show("Vui lòng chọn đơn nghỉ phép!");
+                return;
+            }
+
             int id = Convert.ToInt32(dgvNghiPhep.CurrentRow.Cells["Id"].Value);
+            string trangThai = dgvNghiPhep.CurrentRow.Cells["TrangThai"].Value?.ToString() ?? string.Empty;
+            if (!CoTheDuyet(trangThai)) return;
+
             using var db = new AppDbContext();
             var don = db.DonNghiPheps.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
+
             don.TrangThai = "TuChoi";
             don.NgayDuyet = DateTime.Now;
-            don.NguoiDuyet = "Admin";
+            don.NguoiDuyet = LayNguoiDuyet();
             don.NgayCapNhat = DateTime.Now;
             db.SaveChanges();
             MessageBox.Show("Đã từ chối đơn nghỉ phép!");
@@ -162,14 +196,23 @@ namespace HRM.Winform.Forms.DonTu
 
         private void btnDuyetTangCa_Click(object sender, EventArgs e)
         {
-            if (dgvTangCa.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn tăng ca!"); return; }
+            if (dgvTangCa.CurrentRow == null)
+            {
+                MessageBox.Show("Vui lòng chọn đơn tăng ca!");
+                return;
+            }
+
             int id = Convert.ToInt32(dgvTangCa.CurrentRow.Cells["Id"].Value);
+            string trangThai = dgvTangCa.CurrentRow.Cells["TrangThai"].Value?.ToString() ?? string.Empty;
+            if (!CoTheDuyet(trangThai)) return;
+
             using var db = new AppDbContext();
             var don = db.DonTangCas.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
+
             don.TrangThai = "DaDuyet";
             don.NgayDuyet = DateTime.Now;
-            don.NguoiDuyet = "Admin";
+            don.NguoiDuyet = LayNguoiDuyet();
             don.NgayCapNhat = DateTime.Now;
             db.SaveChanges();
             MessageBox.Show("Đã duyệt đơn tăng ca!");
@@ -178,14 +221,23 @@ namespace HRM.Winform.Forms.DonTu
 
         private void btnTuChoiTangCa_Click(object sender, EventArgs e)
         {
-            if (dgvTangCa.CurrentRow == null) { MessageBox.Show("Vui lòng chọn đơn tăng ca!"); return; }
+            if (dgvTangCa.CurrentRow == null)
+            {
+                MessageBox.Show("Vui lòng chọn đơn tăng ca!");
+                return;
+            }
+
             int id = Convert.ToInt32(dgvTangCa.CurrentRow.Cells["Id"].Value);
+            string trangThai = dgvTangCa.CurrentRow.Cells["TrangThai"].Value?.ToString() ?? string.Empty;
+            if (!CoTheDuyet(trangThai)) return;
+
             using var db = new AppDbContext();
             var don = db.DonTangCas.FirstOrDefault(x => x.Id == id);
             if (don == null) return;
+
             don.TrangThai = "TuChoi";
             don.NgayDuyet = DateTime.Now;
-            don.NguoiDuyet = "Admin";
+            don.NguoiDuyet = LayNguoiDuyet();
             don.NgayCapNhat = DateTime.Now;
             db.SaveChanges();
             MessageBox.Show("Đã từ chối đơn tăng ca!");

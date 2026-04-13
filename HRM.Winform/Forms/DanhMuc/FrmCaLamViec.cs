@@ -83,8 +83,47 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private bool KiemTraDuLieu()
         {
-            if (string.IsNullOrWhiteSpace(txtMaCa.Text)) { MessageBox.Show("Vui lòng nhập mã ca!"); txtMaCa.Focus(); return false; }
-            if (string.IsNullOrWhiteSpace(txtTenCa.Text)) { MessageBox.Show("Vui lòng nhập tên ca!"); txtTenCa.Focus(); return false; }
+            var maCa = ValidationHelper.NormalizeCode(txtMaCa.Text);
+            var tenCa = ValidationHelper.NormalizeText(txtTenCa.Text);
+
+            if (string.IsNullOrWhiteSpace(maCa))
+            {
+                MessageBox.Show("Vui lòng nhập mã ca!");
+                txtMaCa.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(tenCa))
+            {
+                MessageBox.Show("Vui lòng nhập tên ca!");
+                txtTenCa.Focus();
+                return false;
+            }
+
+            if (!chkQuaDem.Checked && dtpGioKetThuc.Value.TimeOfDay <= dtpGioBatDau.Value.TimeOfDay)
+            {
+                MessageBox.Show("Giờ kết thúc phải lớn hơn giờ bắt đầu nếu ca không qua đêm.");
+                dtpGioKetThuc.Focus();
+                return false;
+            }
+
+            int tongPhutCa = (int)((chkQuaDem.Checked
+                ? dtpGioKetThuc.Value.TimeOfDay.Add(TimeSpan.FromDays(1))
+                : dtpGioKetThuc.Value.TimeOfDay) - dtpGioBatDau.Value.TimeOfDay).TotalMinutes;
+
+            if (tongPhutCa <= 0)
+            {
+                MessageBox.Show("Thời lượng ca làm không hợp lệ.");
+                return false;
+            }
+
+            if (nudSoPhutNghi.Value >= tongPhutCa)
+            {
+                MessageBox.Show("Số phút nghỉ phải nhỏ hơn tổng thời lượng ca.");
+                nudSoPhutNghi.Focus();
+                return false;
+            }
+
             return true;
         }
 
@@ -92,11 +131,25 @@ namespace HRM.Winform.Forms.DanhMuc
         {
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
-            if (db.CaLamViecs.Any(x => x.MaCa == txtMaCa.Text.Trim())) { MessageBox.Show("Mã ca đã tồn tại!"); return; }
+            string maCa = ValidationHelper.NormalizeCode(txtMaCa.Text);
+            string tenCa = ValidationHelper.NormalizeText(txtTenCa.Text);
+
+            if (db.CaLamViecs.Any(x => x.MaCa == maCa))
+            {
+                MessageBox.Show("Mã ca đã tồn tại!");
+                return;
+            }
+
+            if (db.CaLamViecs.Any(x => x.TenCa == tenCa))
+            {
+                MessageBox.Show("Tên ca đã tồn tại!");
+                return;
+            }
+
             db.CaLamViecs.Add(new CaLamViec
             {
-                MaCa = txtMaCa.Text.Trim(),
-                TenCa = txtTenCa.Text.Trim(),
+                MaCa = maCa,
+                TenCa = tenCa,
                 GioBatDau = dtpGioBatDau.Value.TimeOfDay,
                 GioKetThuc = dtpGioKetThuc.Value.TimeOfDay,
                 SoPhutNghi = (int)nudSoPhutNghi.Value,
@@ -114,14 +167,37 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnSua_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn ca làm việc cần sửa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn ca làm việc cần sửa!");
+                return;
+            }
+
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
             var ca = db.CaLamViecs.FirstOrDefault(x => x.Id == _idDangChon);
-            if (ca == null) { MessageBox.Show("Không tìm thấy ca làm việc!"); return; }
-            if (db.CaLamViecs.Any(x => x.MaCa == txtMaCa.Text.Trim() && x.Id != _idDangChon)) { MessageBox.Show("Mã ca đã tồn tại!"); return; }
-            ca.MaCa = txtMaCa.Text.Trim();
-            ca.TenCa = txtTenCa.Text.Trim();
+            if (ca == null)
+            {
+                MessageBox.Show("Không tìm thấy ca làm việc!");
+                return;
+            }
+
+            string maCa = ValidationHelper.NormalizeCode(txtMaCa.Text);
+            string tenCa = ValidationHelper.NormalizeText(txtTenCa.Text);
+            if (db.CaLamViecs.Any(x => x.MaCa == maCa && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Mã ca đã tồn tại!");
+                return;
+            }
+
+            if (db.CaLamViecs.Any(x => x.TenCa == tenCa && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Tên ca đã tồn tại!");
+                return;
+            }
+
+            ca.MaCa = maCa;
+            ca.TenCa = tenCa;
             ca.GioBatDau = dtpGioBatDau.Value.TimeOfDay;
             ca.GioKetThuc = dtpGioKetThuc.Value.TimeOfDay;
             ca.SoPhutNghi = (int)nudSoPhutNghi.Value;
@@ -138,12 +214,27 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn ca làm việc cần xóa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn ca làm việc cần xóa!");
+                return;
+            }
+
             if (MessageBox.Show("Bạn có chắc muốn xóa ca làm việc này không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             using var db = new AppDbContext();
             var ca = db.CaLamViecs.Include(x => x.DanhSachPhanCa).Include(x => x.DanhSachChamCong).FirstOrDefault(x => x.Id == _idDangChon);
-            if (ca == null) { MessageBox.Show("Không tìm thấy ca làm việc!"); return; }
-            if (ca.DanhSachPhanCa.Any() || ca.DanhSachChamCong.Any()) { MessageBox.Show("Ca làm việc đã phát sinh dữ liệu, không thể xóa!"); return; }
+            if (ca == null)
+            {
+                MessageBox.Show("Không tìm thấy ca làm việc!");
+                return;
+            }
+
+            if (ca.DanhSachPhanCa.Any() || ca.DanhSachChamCong.Any())
+            {
+                MessageBox.Show("Ca làm việc đã phát sinh dữ liệu, không thể xóa!");
+                return;
+            }
+
             db.CaLamViecs.Remove(ca);
             db.SaveChanges();
             MessageBox.Show("Xóa ca làm việc thành công!");

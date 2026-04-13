@@ -37,6 +37,8 @@ namespace HRM.Winform.Forms.CaNhan
         private Label lblFaceCapturedValue;
         private Label lblFaceAssetTitle;
         private Label lblFaceAssetValue;
+        private Label lblFaceRequestTitle;
+        private Label lblFaceRequestValue;
         private Panel pnlContact;
         private Label lblSoDienThoai;
         private TextBox txtSoDienThoai;
@@ -74,6 +76,8 @@ namespace HRM.Winform.Forms.CaNhan
             lblFaceCapturedValue = new Label();
             lblFaceAssetTitle = new Label();
             lblFaceAssetValue = new Label();
+            lblFaceRequestTitle = new Label();
+            lblFaceRequestValue = new Label();
             pnlContact = new Panel();
             btnLuu = new Button();
             txtCCCD = new TextBox();
@@ -128,9 +132,11 @@ namespace HRM.Winform.Forms.CaNhan
             pnlInfo.Controls.Add(lblFaceCapturedValue);
             pnlInfo.Controls.Add(lblFaceAssetTitle);
             pnlInfo.Controls.Add(lblFaceAssetValue);
+            pnlInfo.Controls.Add(lblFaceRequestTitle);
+            pnlInfo.Controls.Add(lblFaceRequestValue);
             pnlInfo.Location = new Point(24, 116);
             pnlInfo.Padding = new Padding(24);
-            pnlInfo.Size = new Size(551, 392);
+            pnlInfo.Size = new Size(551, 444);
             lblTrangThaiValue.AutoSize = true;
             lblTrangThaiValue.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             lblTrangThaiValue.Location = new Point(283, 194);
@@ -163,6 +169,13 @@ namespace HRM.Winform.Forms.CaNhan
             lblFaceAssetValue.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             lblFaceAssetValue.Location = new Point(145, 367);
             lblFaceAssetValue.Text = "--";
+            lblFaceRequestTitle.AutoSize = true;
+            lblFaceRequestTitle.Location = new Point(145, 392);
+            lblFaceRequestTitle.Text = "Dang ky lai";
+            lblFaceRequestValue.AutoSize = true;
+            lblFaceRequestValue.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            lblFaceRequestValue.Location = new Point(145, 413);
+            lblFaceRequestValue.Text = "--";
             lblNgayVaoLamValue.AutoSize = true;
             lblNgayVaoLamValue.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             lblNgayVaoLamValue.Location = new Point(27, 194);

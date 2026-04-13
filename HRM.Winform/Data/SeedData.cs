@@ -12,6 +12,11 @@ namespace HRM.Winform.Data
 
             db.Database.Migrate();
 
+            if (!AppConfiguration.IsDefaultSeedEnabled())
+            {
+                return;
+            }
+
             if (!db.PhongBans.Any())
             {
                 db.PhongBans.Add(new PhongBan

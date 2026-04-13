@@ -139,9 +139,65 @@ namespace HRM.Winform.Forms.DonTu
                 return false;
             }
 
+            if (dtpNgayLam.Value.Date < DateTime.Today)
+            {
+                MessageBox.Show("Không được tạo đơn tăng ca cho ngày trong quá khứ.");
+                dtpNgayLam.Focus();
+                return false;
+            }
+
             if (dtpDenGio.Value <= dtpTuGio.Value)
             {
                 MessageBox.Show("Đến giờ phải lớn hơn từ giờ!");
+                return false;
+            }
+
+            if (dtpNgayLam.Value.Date != dtpTuGio.Value.Date || dtpNgayLam.Value.Date != dtpDenGio.Value.Date)
+            {
+                MessageBox.Show("Ngày làm phải trùng với ngày của thời gian tăng ca.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtLyDo.Text))
+            {
+                MessageBox.Show("Vui lòng nhập lý do tăng ca.");
+                txtLyDo.Focus();
+                return false;
+            }
+
+            var tongSoGioThucTe = (decimal)(dtpDenGio.Value - dtpTuGio.Value).TotalHours;
+            if (tongSoGioThucTe <= 0)
+            {
+                MessageBox.Show("Tổng số giờ tăng ca không hợp lệ.");
+                return false;
+            }
+
+            if (Math.Abs(nudTongSoGio.Value - tongSoGioThucTe) > 0.01m)
+            {
+                MessageBox.Show("Tổng số giờ tăng ca không khớp với khoảng thời gian đã chọn.");
+                nudTongSoGio.Focus();
+                return false;
+            }
+
+            using var db = new AppDbContext();
+            int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
+            var nhanVien = db.NhanViens.AsNoTracking().FirstOrDefault(x => x.Id == nhanVienId);
+            if (nhanVien == null || !nhanVien.DangLamViec)
+            {
+                MessageBox.Show("Chỉ được tạo đơn tăng ca cho nhân viên đang làm việc.");
+                return false;
+            }
+
+            bool trungLich = db.DonTangCas.Any(x =>
+                x.NhanVienId == nhanVienId
+                && x.Id != _idDangChon
+                && x.TrangThai != "TuChoi"
+                && x.TuGio < dtpDenGio.Value
+                && dtpTuGio.Value < x.DenGio);
+
+            if (trungLich)
+            {
+                MessageBox.Show("Nhân viên đã có đơn tăng ca khác bị trùng thời gian.");
                 return false;
             }
 
@@ -167,7 +223,7 @@ namespace HRM.Winform.Forms.DonTu
                 TuGio = dtpTuGio.Value,
                 DenGio = dtpDenGio.Value,
                 TongSoGio = (double)nudTongSoGio.Value,
-                LyDo = txtLyDo.Text.Trim(),
+                LyDo = ValidationHelper.NormalizeText(txtLyDo.Text),
                 TrangThai = cboTrangThai.Text,
                 NgayTao = DateTime.Now
             });
@@ -202,7 +258,7 @@ namespace HRM.Winform.Forms.DonTu
             don.TuGio = dtpTuGio.Value;
             don.DenGio = dtpDenGio.Value;
             don.TongSoGio = (double)nudTongSoGio.Value;
-            don.LyDo = txtLyDo.Text.Trim();
+            don.LyDo = ValidationHelper.NormalizeText(txtLyDo.Text);
             don.TrangThai = cboTrangThai.Text;
             don.NgayCapNhat = DateTime.Now;
 

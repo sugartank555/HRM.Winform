@@ -48,6 +48,7 @@ namespace HRM.Winform.Forms.CaNhan
             lblFaceStatusTitle.ForeColor = Color.FromArgb(71, 85, 105);
             lblFaceCapturedTitle.ForeColor = Color.FromArgb(71, 85, 105);
             lblFaceAssetTitle.ForeColor = Color.FromArgb(71, 85, 105);
+            lblFaceRequestTitle.ForeColor = Color.FromArgb(71, 85, 105);
         }
 
         private void TaiThongTin()
@@ -86,7 +87,29 @@ namespace HRM.Winform.Forms.CaNhan
         {
             var profile = FaceProfileStore.Load(CurrentUser.NhanVienId);
             bool daDangKy = profile != null && profile.Descriptor.Length > 0 && !string.IsNullOrWhiteSpace(profile.ImageDataUrl);
-            btnDangKyKhuonMat.Text = daDangKy ? "Dang ky lai khuon mat" : "Dang ky khuon mat";
+            var pendingRequest = FaceRegistrationResetRequestStore.GetPending(CurrentUser.NhanVienId);
+            var approvedUnlock = FaceRegistrationResetRequestStore.GetApprovedUnlock(CurrentUser.NhanVienId);
+
+            if (!daDangKy)
+            {
+                btnDangKyKhuonMat.Text = "Dang ky khuon mat";
+                btnDangKyKhuonMat.Enabled = true;
+            }
+            else if (approvedUnlock != null)
+            {
+                btnDangKyKhuonMat.Text = "Dang ky lai khuon mat";
+                btnDangKyKhuonMat.Enabled = true;
+            }
+            else if (pendingRequest != null)
+            {
+                btnDangKyKhuonMat.Text = "Cho admin duyet";
+                btnDangKyKhuonMat.Enabled = true;
+            }
+            else
+            {
+                btnDangKyKhuonMat.Text = "Gui yeu cau dang ky lai";
+                btnDangKyKhuonMat.Enabled = true;
+            }
 
             lblFaceStatusValue.Text = daDangKy ? "Da dang ky mau" : "Chua co mau";
             lblFaceStatusValue.ForeColor = daDangKy
@@ -102,6 +125,27 @@ namespace HRM.Winform.Forms.CaNhan
             lblFaceAssetValue.ForeColor = assetConfig.IsOfflineReady
                 ? Color.FromArgb(5, 150, 105)
                 : Color.FromArgb(234, 88, 12);
+
+            if (!daDangKy)
+            {
+                lblFaceRequestValue.Text = "Chua can duyet";
+                lblFaceRequestValue.ForeColor = Color.FromArgb(100, 116, 139);
+            }
+            else if (approvedUnlock != null)
+            {
+                lblFaceRequestValue.Text = $"Da duyet, cho dang ky lai tu {approvedUnlock.UnlockGrantedAt:HH:mm dd/MM}";
+                lblFaceRequestValue.ForeColor = Color.FromArgb(5, 150, 105);
+            }
+            else if (pendingRequest != null)
+            {
+                lblFaceRequestValue.Text = $"Dang cho duyet tu {pendingRequest.RequestedAt:HH:mm dd/MM}";
+                lblFaceRequestValue.ForeColor = Color.FromArgb(234, 88, 12);
+            }
+            else
+            {
+                lblFaceRequestValue.Text = "Da khoa, can gui yeu cau dang ky lai";
+                lblFaceRequestValue.ForeColor = Color.FromArgb(220, 38, 38);
+            }
 
             if (picKhuonMatMau.Image != null)
             {
@@ -125,10 +169,57 @@ namespace HRM.Winform.Forms.CaNhan
                 return;
             }
 
-            nhanVien.SoDienThoai = txtSoDienThoai.Text.Trim();
-            nhanVien.Email = txtEmail.Text.Trim();
-            nhanVien.DiaChi = txtDiaChi.Text.Trim();
-            nhanVien.CCCD = txtCCCD.Text.Trim();
+            var soDienThoai = ValidationHelper.NormalizeText(txtSoDienThoai.Text);
+            var email = ValidationHelper.NormalizeOptional(txtEmail.Text);
+            var diaChi = ValidationHelper.NormalizeOptional(txtDiaChi.Text);
+            var cccd = ValidationHelper.NormalizeOptional(txtCCCD.Text);
+
+            if (!ValidationHelper.IsValidVietnamesePhone(soDienThoai))
+            {
+                MessageBox.Show("So dien thoai khong hop le.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtSoDienThoai.Focus();
+                return;
+            }
+
+            if (email != null && !ValidationHelper.IsValidEmail(email))
+            {
+                MessageBox.Show("Email khong dung dinh dang.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtEmail.Focus();
+                return;
+            }
+
+            if (cccd != null && !ValidationHelper.IsValidCitizenId(cccd))
+            {
+                MessageBox.Show("CCCD phai gom dung 12 chu so.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtCCCD.Focus();
+                return;
+            }
+
+            if (db.NhanViens.Any(x => x.Id != _nhanVienId && x.SoDienThoai == soDienThoai))
+            {
+                MessageBox.Show("So dien thoai da ton tai.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtSoDienThoai.Focus();
+                return;
+            }
+
+            if (email != null && db.NhanViens.Any(x => x.Id != _nhanVienId && x.Email == email))
+            {
+                MessageBox.Show("Email da ton tai.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtEmail.Focus();
+                return;
+            }
+
+            if (cccd != null && db.NhanViens.Any(x => x.Id != _nhanVienId && x.CCCD == cccd))
+            {
+                MessageBox.Show("CCCD da ton tai.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtCCCD.Focus();
+                return;
+            }
+
+            nhanVien.SoDienThoai = soDienThoai;
+            nhanVien.Email = email;
+            nhanVien.DiaChi = diaChi;
+            nhanVien.CCCD = cccd;
             nhanVien.NgayCapNhat = DateTime.Now;
 
             db.SaveChanges();
@@ -144,6 +235,50 @@ namespace HRM.Winform.Forms.CaNhan
 
         private void btnDangKyKhuonMat_Click(object sender, EventArgs e)
         {
+            bool daDangKy = FaceProfileStore.HasValidProfile(CurrentUser.NhanVienId);
+            var pendingRequest = FaceRegistrationResetRequestStore.GetPending(CurrentUser.NhanVienId);
+            var approvedUnlock = FaceRegistrationResetRequestStore.GetApprovedUnlock(CurrentUser.NhanVienId);
+
+            if (daDangKy && approvedUnlock == null)
+            {
+                if (pendingRequest != null)
+                {
+                    MessageBox.Show(
+                        $"Ban da gui yeu cau dang ky lai khuon mat luc {pendingRequest.RequestedAt:HH:mm dd/MM/yyyy}. Cho admin/HR duyet de mo khoa.",
+                        "Dang cho duyet",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    return;
+                }
+
+                var request = FaceRegistrationResetRequestStore.CreateRequest(
+                    CurrentUser.NhanVienId,
+                    lblMaNhanVienValue.Text,
+                    CurrentUser.HoTen,
+                    CurrentUser.TenDangNhap,
+                    "Nhan vien yeu cau dang ky lai khuon mat.");
+
+                AttendanceAuditStore.Save(new AttendanceAuditEntry
+                {
+                    NhanVienId = CurrentUser.NhanVienId,
+                    MaNhanVien = lblMaNhanVienValue.Text,
+                    HoTen = CurrentUser.HoTen,
+                    ThoiGian = DateTime.Now,
+                    HanhDong = "GuiYeuCauDangKyLaiKhuonMat",
+                    PhuongThuc = "KhuonMat",
+                    KetQua = "ThanhCong",
+                    ChiTiet = $"Da gui yeu cau {request.RequestId} luc {request.RequestedAt:HH:mm dd/MM/yyyy}."
+                });
+
+                CapNhatTrangThaiKhuonMat();
+                MessageBox.Show(
+                    "Da gui yeu cau dang ky lai khuon mat. Admin/HR can duyet truoc khi ban co the dang ky lai.",
+                    "Da gui yeu cau",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
             using var frm = new FrmCameraKhuonMat("Dang ky khuon mat", "Chup anh khuon mat mau cho tai khoan cua ban");
             if (frm.ShowDialog(this) != DialogResult.OK || frm.CaptureResult == null)
             {
@@ -166,6 +301,11 @@ namespace HRM.Winform.Forms.CaNhan
             };
 
             FaceProfileStore.Save(profile);
+            if (daDangKy && approvedUnlock != null)
+            {
+                FaceRegistrationResetRequestStore.ConsumeUnlock(CurrentUser.NhanVienId);
+            }
+
             AttendanceAuditStore.Save(new AttendanceAuditEntry
             {
                 NhanVienId = CurrentUser.NhanVienId,

@@ -178,9 +178,18 @@ namespace HRM.Winform.Forms.NhanSu
 
         private bool KiemTraDuLieu(bool batBuocNhapMatKhau)
         {
-            if (string.IsNullOrWhiteSpace(txtTenDangNhap.Text))
+            var tenDangNhap = ValidationHelper.NormalizeText(txtTenDangNhap.Text);
+
+            if (string.IsNullOrWhiteSpace(tenDangNhap))
             {
                 MessageBox.Show("Vui lòng nhập tên đăng nhập!");
+                txtTenDangNhap.Focus();
+                return false;
+            }
+
+            if (!ValidationHelper.IsValidUsername(tenDangNhap))
+            {
+                MessageBox.Show("Tên đăng nhập chỉ được chứa chữ, số, dấu chấm, gạch dưới hoặc gạch ngang và phải dài từ 4 đến 50 ký tự.");
                 txtTenDangNhap.Focus();
                 return false;
             }
@@ -188,6 +197,20 @@ namespace HRM.Winform.Forms.NhanSu
             if (batBuocNhapMatKhau && string.IsNullOrWhiteSpace(txtMatKhau.Text))
             {
                 MessageBox.Show("Vui lòng nhập mật khẩu!");
+                txtMatKhau.Focus();
+                return false;
+            }
+
+            if (batBuocNhapMatKhau && !ValidationHelper.IsStrongEnoughPassword(txtMatKhau.Text))
+            {
+                MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự.");
+                txtMatKhau.Focus();
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(txtMatKhau.Text) && !ValidationHelper.IsStrongEnoughPassword(txtMatKhau.Text))
+            {
+                MessageBox.Show("Mật khẩu mới phải có ít nhất 6 ký tự.");
                 txtMatKhau.Focus();
                 return false;
             }
@@ -206,6 +229,16 @@ namespace HRM.Winform.Forms.NhanSu
                 return false;
             }
 
+            using var db = new AppDbContext();
+            int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
+            var nhanVien = db.NhanViens.AsNoTracking().FirstOrDefault(x => x.Id == nhanVienId);
+            if (nhanVien == null || !nhanVien.DangLamViec)
+            {
+                MessageBox.Show("Chỉ được cấp tài khoản cho nhân viên đang làm việc.");
+                cboNhanVien.Focus();
+                return false;
+            }
+
             return true;
         }
 
@@ -215,7 +248,7 @@ namespace HRM.Winform.Forms.NhanSu
 
             using var db = new AppDbContext();
 
-            string tenDangNhap = txtTenDangNhap.Text.Trim();
+            string tenDangNhap = ValidationHelper.NormalizeText(txtTenDangNhap.Text);
             int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
 
             if (db.TaiKhoans.Any(x => x.TenDangNhap == tenDangNhap))
@@ -232,7 +265,7 @@ namespace HRM.Winform.Forms.NhanSu
 
             db.TaiKhoans.Add(new TaiKhoan
             {
-                TenDangNhap = txtTenDangNhap.Text.Trim(),
+                TenDangNhap = tenDangNhap,
                 MatKhauHash = HashHelper.ToSha256(txtMatKhau.Text.Trim()),
                 VaiTro = cboVaiTro.Text,
                 HoatDong = chkHoatDong.Checked,
@@ -265,7 +298,7 @@ namespace HRM.Winform.Forms.NhanSu
                 return;
             }
 
-            string tenDangNhap = txtTenDangNhap.Text.Trim();
+            string tenDangNhap = ValidationHelper.NormalizeText(txtTenDangNhap.Text);
             int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
 
             if (db.TaiKhoans.Any(x => x.TenDangNhap == tenDangNhap && x.Id != _idDangChon))
@@ -280,7 +313,7 @@ namespace HRM.Winform.Forms.NhanSu
                 return;
             }
 
-            taiKhoan.TenDangNhap = txtTenDangNhap.Text.Trim();
+            taiKhoan.TenDangNhap = tenDangNhap;
             taiKhoan.VaiTro = cboVaiTro.Text;
             taiKhoan.HoatDong = chkHoatDong.Checked;
             taiKhoan.NhanVienId = nhanVienId;

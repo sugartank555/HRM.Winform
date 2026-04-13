@@ -280,6 +280,53 @@ namespace HRM.Winform.Forms.ChamCong
                 return false;
             }
 
+            using var db = new AppDbContext();
+            int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
+            var nhanVien = db.NhanViens.AsNoTracking().FirstOrDefault(x => x.Id == nhanVienId);
+            if (nhanVien == null || !nhanVien.DangLamViec)
+            {
+                MessageBox.Show("Chỉ được chấm công cho nhân viên đang làm việc!");
+                return false;
+            }
+
+            if (dtpNgayLamViec.Value.Date < nhanVien.NgayVaoLam.Date)
+            {
+                MessageBox.Show("Ngày chấm công không được trước ngày vào làm của nhân viên.");
+                return false;
+            }
+
+            string trangThai = cboTrangThai.Text;
+            bool canCoCheckInOut = trangThai is "CoMat" or "DiMuon" or "VeSom";
+            bool choPhepThieuMotDau = trangThai is "ThieuCheckIn" or "ThieuCheckOut";
+            bool khongCanGio = trangThai is "Vang" or "NghiPhep" or "CongTac";
+
+            if (canCoCheckInOut && dtpCheckOut.Value <= dtpCheckIn.Value)
+            {
+                MessageBox.Show("Giờ check-out phải lớn hơn giờ check-in.");
+                return false;
+            }
+
+            if (khongCanGio)
+            {
+                if (nudSoGioLam.Value != 0 || nudTangCa.Value != 0 || nudDiMuon.Value != 0 || nudVeSom.Value != 0)
+                {
+                    MessageBox.Show("Trạng thái vắng/nghỉ phép/công tác không được có số giờ làm, tăng ca, đi muộn hoặc về sớm.");
+                    return false;
+                }
+            }
+
+            if (choPhepThieuMotDau && dtpCheckOut.Value <= dtpCheckIn.Value)
+            {
+                MessageBox.Show("Dữ liệu check-in/check-out không hợp lệ cho trạng thái thiếu check.");
+                return false;
+            }
+
+            if (nudSoGioLam.Value < 0 || nudTangCa.Value < 0)
+            {
+                MessageBox.Show("Số giờ làm và tăng ca không được âm.");
+                return false;
+            }
+
             return true;
         }
 
@@ -311,6 +358,13 @@ namespace HRM.Winform.Forms.ChamCong
             int nhanVienId = Convert.ToInt32(cboNhanVien.SelectedValue);
             DateTime ngay = dtpNgayLamViec.Value.Date;
 
+            if (ngay < DateTime.Today)
+            {
+                MessageBox.Show("Không được tạo mới chấm công cho ngày trong quá khứ.");
+                dtpNgayLamViec.Focus();
+                return;
+            }
+
             if (KiemTraThangDaChot(ngay)) return;
 
             using var db = new AppDbContext();
@@ -334,7 +388,7 @@ namespace HRM.Winform.Forms.ChamCong
                 SoGioLam = (double)nudSoGioLam.Value,
                 SoGioTangCa = (double)nudTangCa.Value,
                 TrangThai = cboTrangThai.Text,
-                GhiChu = txtGhiChu.Text.Trim(),
+                GhiChu = ValidationHelper.NormalizeOptional(txtGhiChu.Text),
                 NgayTao = DateTime.Now
             });
 
@@ -389,7 +443,7 @@ namespace HRM.Winform.Forms.ChamCong
             cc.SoGioLam = (double)nudSoGioLam.Value;
             cc.SoGioTangCa = (double)nudTangCa.Value;
             cc.TrangThai = cboTrangThai.Text;
-            cc.GhiChu = txtGhiChu.Text.Trim();
+            cc.GhiChu = ValidationHelper.NormalizeOptional(txtGhiChu.Text);
             cc.NgayCapNhat = DateTime.Now;
 
             db.SaveChanges();

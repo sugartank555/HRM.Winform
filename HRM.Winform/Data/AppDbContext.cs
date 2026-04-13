@@ -1,4 +1,5 @@
-﻿using HRM.Winform.Models;
+using HRM.Winform.Helpers;
+using HRM.Winform.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HRM.Winform.Data
@@ -20,8 +21,7 @@ namespace HRM.Winform.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(
-                    @"Server=LAPTOP-1OLPGQ5K\SUGAR;Database=HRMDb;Trusted_Connection=True;TrustServerCertificate=True;");
+                optionsBuilder.UseSqlServer(AppConfiguration.GetRequiredConnectionString());
             }
         }
 

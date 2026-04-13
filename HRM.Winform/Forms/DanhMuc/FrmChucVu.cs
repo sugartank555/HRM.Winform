@@ -74,8 +74,23 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private bool KiemTraDuLieu()
         {
-            if (string.IsNullOrWhiteSpace(txtMaChucVu.Text)) { MessageBox.Show("Vui lòng nhập mã chức vụ!"); txtMaChucVu.Focus(); return false; }
-            if (string.IsNullOrWhiteSpace(txtTenChucVu.Text)) { MessageBox.Show("Vui lòng nhập tên chức vụ!"); txtTenChucVu.Focus(); return false; }
+            var maChucVu = ValidationHelper.NormalizeCode(txtMaChucVu.Text);
+            var tenChucVu = ValidationHelper.NormalizeText(txtTenChucVu.Text);
+
+            if (string.IsNullOrWhiteSpace(maChucVu))
+            {
+                MessageBox.Show("Vui lòng nhập mã chức vụ!");
+                txtMaChucVu.Focus();
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(tenChucVu))
+            {
+                MessageBox.Show("Vui lòng nhập tên chức vụ!");
+                txtTenChucVu.Focus();
+                return false;
+            }
+
             return true;
         }
 
@@ -83,13 +98,26 @@ namespace HRM.Winform.Forms.DanhMuc
         {
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
-            string ma = txtMaChucVu.Text.Trim();
-            if (db.ChucVus.Any(x => x.MaChucVu == ma)) { MessageBox.Show("Mã chức vụ đã tồn tại!"); return; }
+            string ma = ValidationHelper.NormalizeCode(txtMaChucVu.Text);
+            string ten = ValidationHelper.NormalizeText(txtTenChucVu.Text);
+
+            if (db.ChucVus.Any(x => x.MaChucVu == ma))
+            {
+                MessageBox.Show("Mã chức vụ đã tồn tại!");
+                return;
+            }
+
+            if (db.ChucVus.Any(x => x.TenChucVu == ten))
+            {
+                MessageBox.Show("Tên chức vụ đã tồn tại!");
+                return;
+            }
+
             db.ChucVus.Add(new ChucVu
             {
-                MaChucVu = txtMaChucVu.Text.Trim(),
-                TenChucVu = txtTenChucVu.Text.Trim(),
-                MoTa = txtMoTa.Text.Trim(),
+                MaChucVu = ma,
+                TenChucVu = ten,
+                MoTa = ValidationHelper.NormalizeOptional(txtMoTa.Text),
                 NgayTao = DateTime.Now
             });
             db.SaveChanges();
@@ -100,16 +128,39 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnSua_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn chức vụ cần sửa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn chức vụ cần sửa!");
+                return;
+            }
+
             if (!KiemTraDuLieu()) return;
             using var db = new AppDbContext();
             var chucVu = db.ChucVus.FirstOrDefault(x => x.Id == _idDangChon);
-            if (chucVu == null) { MessageBox.Show("Không tìm thấy chức vụ!"); return; }
-            string ma = txtMaChucVu.Text.Trim();
-            if (db.ChucVus.Any(x => x.MaChucVu == ma && x.Id != _idDangChon)) { MessageBox.Show("Mã chức vụ đã tồn tại!"); return; }
-            chucVu.MaChucVu = txtMaChucVu.Text.Trim();
-            chucVu.TenChucVu = txtTenChucVu.Text.Trim();
-            chucVu.MoTa = txtMoTa.Text.Trim();
+            if (chucVu == null)
+            {
+                MessageBox.Show("Không tìm thấy chức vụ!");
+                return;
+            }
+
+            string ma = ValidationHelper.NormalizeCode(txtMaChucVu.Text);
+            string ten = ValidationHelper.NormalizeText(txtTenChucVu.Text);
+
+            if (db.ChucVus.Any(x => x.MaChucVu == ma && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Mã chức vụ đã tồn tại!");
+                return;
+            }
+
+            if (db.ChucVus.Any(x => x.TenChucVu == ten && x.Id != _idDangChon))
+            {
+                MessageBox.Show("Tên chức vụ đã tồn tại!");
+                return;
+            }
+
+            chucVu.MaChucVu = ma;
+            chucVu.TenChucVu = ten;
+            chucVu.MoTa = ValidationHelper.NormalizeOptional(txtMoTa.Text);
             chucVu.NgayCapNhat = DateTime.Now;
             db.SaveChanges();
             MessageBox.Show("Cập nhật chức vụ thành công!");
@@ -119,12 +170,27 @@ namespace HRM.Winform.Forms.DanhMuc
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
-            if (_idDangChon == 0) { MessageBox.Show("Vui lòng chọn chức vụ cần xóa!"); return; }
+            if (_idDangChon == 0)
+            {
+                MessageBox.Show("Vui lòng chọn chức vụ cần xóa!");
+                return;
+            }
+
             if (MessageBox.Show("Bạn có chắc muốn xóa chức vụ này không?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             using var db = new AppDbContext();
             var chucVu = db.ChucVus.Include(x => x.DanhSachNhanVien).FirstOrDefault(x => x.Id == _idDangChon);
-            if (chucVu == null) { MessageBox.Show("Không tìm thấy chức vụ!"); return; }
-            if (chucVu.DanhSachNhanVien.Any()) { MessageBox.Show("Chức vụ đang có nhân viên, không thể xóa!"); return; }
+            if (chucVu == null)
+            {
+                MessageBox.Show("Không tìm thấy chức vụ!");
+                return;
+            }
+
+            if (chucVu.DanhSachNhanVien.Any())
+            {
+                MessageBox.Show("Chức vụ đang có nhân viên, không thể xóa!");
+                return;
+            }
+
             db.ChucVus.Remove(chucVu);
             db.SaveChanges();
             MessageBox.Show("Xóa chức vụ thành công!");
